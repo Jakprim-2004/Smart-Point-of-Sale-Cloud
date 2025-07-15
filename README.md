@@ -436,18 +436,6 @@ WHERE image_url IS NULL AND image_name IS NOT NULL;
 - **Lazy Loading**: โหลดข้อมูลเมื่อจำเป็น
 - **Caching**: ใช้ browser cache อย่างเหมาะสม
 
-## 🤝 การมีส่วนร่วม
-
-1. Fork repository
-2. สร้าง feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit การเปลี่ยนแปลง (`git commit -m 'Add amazing feature'`)
-4. Push ไปยัง branch (`git push origin feature/amazing-feature`)
-5. เปิด Pull Request
-
-## 📄 License
-
-โครงการนี้อยู่ภายใต้ MIT License - ดูไฟล์ [LICENSE](LICENSE) สำหรับรายละเอียด
-
 ## 🛠️ Technology Stack
 
 ### Backend
