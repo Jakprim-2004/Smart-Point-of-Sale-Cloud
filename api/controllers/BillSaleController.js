@@ -8,20 +8,24 @@ const BillSaleDetailModel = require("../models/BillSaleDetailModel");
 const CustomerModel = require("../models/CustomerModel"); 
 const PointTransactionModel = require('../models/PointTransactionModel'); 
 
-// ฟังก์ชันสำหรับดึงวันที่และเวลาปัจจุบันตามโซนเวลาไทย
-const getThaiDateTime = () => {
-    const now = new Date();
-    return new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
-};
+// ฟังก์ชันสำหรับดึงวันที่และเวลาปัจจุบันตามโซนเวลาไทย (ไม่ใช้แล้ว - ใช้ UTC แทน)
+// const getThaiDateTime = () => {
+//     const now = new Date();
+//     return new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+// };
 
 // API สำหรับเปิดบิลขายใหม่
 app.get('/billSale/openBill', service.isLogin, async (req, res) => {
     try {
+        // สร้างเวลาไทยปัจจุบัน
+        const now = new Date();
+        const thaiTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // เพิ่ม 7 ชั่วโมง
+        
         // เตรียมข้อมูลสำหรับสร้างบิลใหม่
         const payload = {
             userId: service.getMemberId(req), // ดึงรหัสผู้ใช้จาก request
             status: 'open', // ตั้งสถานะบิลเป็นเปิด
-            createdAt: getThaiDateTime() // เก็บวันที่และเวลาตามโซนไทย
+            createdAt: thaiTime // ใช้เวลาไทยปัจจุบัน
         };
 
         // ตรวจสอบว่ามีบิลที่เปิดอยู่ของผู้ใช้หรือไม่
@@ -214,9 +218,13 @@ app.post('/billSale/updateQty', service.isLogin, async (req, res) => {
 app.post('/billSale/endSale', service.isLogin, async (req, res) => {
     try {
         const { method, amount, billSaleDetails, customerId, description } = req.body;
-        const currentTime = getThaiDateTime();
+        // สร้างเวลาไทยปัจจุบัน
+        const now = new Date();
+        const currentTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // เพิ่ม 7 ชั่วโมง
         
         console.log('Received customer ID:', customerId, 'Type:', typeof customerId);
+        console.log('End sale time (Thai):', currentTime.toISOString());
+        console.log('End sale time (Thai local):', currentTime.toLocaleString('th-TH'));
         
         // สร้าง update payload โดยไม่รวม customerId ก่อน
         const updatePayload = {
@@ -224,7 +232,7 @@ app.post('/billSale/endSale', service.isLogin, async (req, res) => {
             paymentMethod: method,
             payDate: currentTime,
             totalAmount: amount,
-            createdAt: currentTime,
+            // ไม่อัปเดต createdAt เพราะต้องเก็บเวลาที่สร้างบิลเดิม
             updatedAt: currentTime,
             description: description || ""
         };
@@ -248,12 +256,14 @@ app.post('/billSale/endSale', service.isLogin, async (req, res) => {
             }
         }
         
+        console.log('Updating bill with payload:', updatePayload);
         const updatedBill = await BillSaleModel.update(updatePayload, {
             where: {
                 status: 'open',
                 userId: service.getMemberId(req)
             }
         });
+        console.log('Bill update result:', updatedBill);
 
         for (const detail of billSaleDetails) {
             const subtotal = detail.qty * detail.price;

@@ -223,7 +223,7 @@ router.get('/reportTopSellingProducts', async (req, res) => {
         attributes: [],
         required: false
       }],
-      group: ['productId', 'product.name'],
+      group: ['productId', 'product.id', 'product.name'],
       where: { 
         userId: userId,
         billSaleId: {
@@ -322,7 +322,7 @@ router.get('/reportTopSellingCategories', async (req, res) => {
           [sequelize.Op.lt]: tomorrow
         }
       },
-      group: ['product.category'],
+      group: ['product.id', 'product.category'],
       having: sequelize.literal('SUM(qty) > 0'),
       order: [[sequelize.fn('SUM', sequelize.literal('qty * "billSaleDetail"."price"')), 'DESC']],
       limit: 5
@@ -615,12 +615,12 @@ router.post('/reportSalesByDateRange', async (req, res) => {
     const userId = service.getMemberId(req);
     const { dateRange, customStartDate, customEndDate } = req.body;
     
-    let startDate = new Date();
-    let endDate = new Date();
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(23, 59, 59, 999);
-
-    // Handle different date ranges with validation
+    console.log('ReportSalesByDateRange input:', { dateRange, customStartDate, customEndDate, userId });
+    
+    let startDate, endDate;
+    const now = new Date();
+    
+    // Handle different date ranges with proper timezone handling
     if (dateRange === 'custom') {
       if (!customStartDate || !customEndDate) {
         return res.send({
@@ -628,43 +628,72 @@ router.post('/reportSalesByDateRange', async (req, res) => {
           results: []
         });
       }
-      startDate = new Date(customStartDate);
-      endDate = new Date(customEndDate);
+      
+      // Parse dates เป็นเวลาไทยโดยตรง (เนื่องจากข้อมูลใน DB เป็นเวลาไทยแล้ว)
+      startDate = new Date(customStartDate + 'T00:00:00.000');
+      endDate = new Date(customEndDate + 'T23:59:59.999');
+      
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.log('Invalid dates:', { startDate, endDate });
         return res.send({
           message: 'success',
           results: []
         });
       }
-      endDate.setHours(23, 59, 59, 999);
     } else {
+      // Set base dates for today (Thai time)
+      const today = new Date();
+      const thaiToday = new Date(today.getTime() + (7 * 60 * 60 * 1000)); // เวลาไทยปัจจุบัน
+      thaiToday.setHours(0, 0, 0, 0);
+      
       switch (dateRange) {
-        case 'yesterday':
-          startDate.setDate(startDate.getDate() - 1);
-          endDate.setDate(endDate.getDate() - 1);
-          break;
-        case 'last7days':
-          startDate.setDate(startDate.getDate() - 6);
-          break;
-        case 'last30days':
-          startDate.setDate(startDate.getDate() - 29);
-          break;
-        case 'thisMonth':
-          startDate.setDate(1);
-          break;
-        case 'lastMonth':
-          startDate.setMonth(startDate.getMonth() - 1);
-          startDate.setDate(1);
-          endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
-          break;
-        case 'custom':
-          startDate = new Date(customStartDate);
-          endDate = new Date(customEndDate);
+        case 'today':
+          startDate = new Date(thaiToday);
+          endDate = new Date(thaiToday);
           endDate.setHours(23, 59, 59, 999);
           break;
+        case 'yesterday':
+          startDate = new Date(thaiToday);
+          startDate.setDate(startDate.getDate() - 1);
+          endDate = new Date(startDate);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case 'last7days':
+          startDate = new Date(thaiToday);
+          startDate.setDate(startDate.getDate() - 6);
+          endDate = new Date(thaiToday);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case 'last30days':
+        case 'thisMonth':
+          if (dateRange === 'last30days') {
+            startDate = new Date(thaiToday);
+            startDate.setDate(startDate.getDate() - 29);
+          } else {
+            startDate = new Date(thaiToday.getFullYear(), thaiToday.getMonth(), 1);
+          }
+          endDate = new Date(thaiToday);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case 'lastMonth':
+          startDate = new Date(thaiToday.getFullYear(), thaiToday.getMonth() - 1, 1);
+          endDate = new Date(thaiToday.getFullYear(), thaiToday.getMonth(), 0, 23, 59, 59, 999);
+          break;
+        default:
+          // Default to today
+          startDate = new Date(thaiToday);
+          endDate = new Date(thaiToday);
+          endDate.setHours(23, 59, 59, 999);
       }
     }
-
+    
+    console.log('Final date range for query:', { 
+      startDate: startDate.toISOString(), 
+      endDate: endDate.toISOString(),
+      startDateLocal: startDate.toLocaleString('th-TH'),
+      endDateLocal: endDate.toLocaleString('th-TH')
+    });
+    
     const results = await BillSaleDetailModel.findAll({
       attributes: [
         'productId',
@@ -720,13 +749,32 @@ router.post('/productDetails', async (req, res) => {
     const userId = service.getMemberId(req);
     const { startDate, endDate, dateRange } = req.body;
     
-    // Create Date objects for UTC+7 (Bangkok timezone)
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    console.log('ProductDetails input:', { startDate, endDate, dateRange, userId });
     
-    // Adjust times
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
+    // Handle date parsing with proper timezone
+    let start, end;
+    
+    if (startDate && endDate) {
+      // Parse dates เป็นเวลาไทยโดยตรง
+      start = new Date(startDate + 'T00:00:00.000');
+      end = new Date(endDate + 'T23:59:59.999');
+    } else {
+      // Default to today if no dates provided (Thai time)
+      const today = new Date();
+      const thaiToday = new Date(today.getTime() + (7 * 60 * 60 * 1000)); // เวลาไทยปัจจุบัน
+      thaiToday.setHours(0, 0, 0, 0);
+      
+      start = new Date(thaiToday);
+      end = new Date(thaiToday);
+      end.setHours(23, 59, 59, 999);
+    }
+    
+    console.log('Final date range for productDetails:', { 
+      start: start.toISOString(), 
+      end: end.toISOString(),
+      startLocal: start.toLocaleString('th-TH'),
+      endLocal: end.toLocaleString('th-TH')
+    });
 
     // เรียกข้อมูลแบบรายวัน โดยอย่าเพิ่ม cost/price ในการ GROUP BY
     const results = await BillSaleDetailModel.findAll({
@@ -858,11 +906,34 @@ router.post('/reportTopSalesDays', async (req, res) => {
     const userId = service.getMemberId(req);
     const { startDate, endDate } = req.body;
     
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    console.log('ReportTopSalesDays input:', { startDate, endDate, userId });
     
-    start.setHours(7, 0, 0, 0);
-    end.setHours(30, 59, 59, 999);
+    // Handle date parsing with proper timezone
+    let start, end;
+    
+    if (startDate && endDate) {
+      // Parse dates เป็นเวลาไทยโดยตรง
+      start = new Date(startDate + 'T00:00:00.000');
+      end = new Date(endDate + 'T23:59:59.999');
+    } else {
+      // Default to last 30 days if no dates provided (Thai time)
+      const today = new Date();
+      const thaiToday = new Date(today.getTime() + (7 * 60 * 60 * 1000)); // เวลาไทยปัจจุบัน
+      thaiToday.setHours(23, 59, 59, 999);
+      end = new Date(thaiToday);
+      
+      const thai30DaysAgo = new Date(thaiToday);
+      thai30DaysAgo.setDate(thai30DaysAgo.getDate() - 29);
+      thai30DaysAgo.setHours(0, 0, 0, 0);
+      start = new Date(thai30DaysAgo);
+    }
+    
+    console.log('Final date range for reportTopSalesDays:', { 
+      start: start.toISOString(), 
+      end: end.toISOString(),
+      startLocal: start.toLocaleString('th-TH'),
+      endLocal: end.toLocaleString('th-TH')
+    });
 
     const results = await BillSaleDetailModel.findAll({
       attributes: [

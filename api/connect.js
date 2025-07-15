@@ -9,7 +9,10 @@ const sequelize = process.env.DATABASE_URL
             ssl: {
                 require: true,
                 rejectUnauthorized: false
-            }
+            },
+            // ใช้ timezone ไทย
+            useUTC: false,
+            timezone: '+07:00'
         },
         pool: {
             max: 1, 
@@ -22,7 +25,12 @@ const sequelize = process.env.DATABASE_URL
         },
         // เพิ่ม options สำหรับ Neon
         dialectModule: require('pg'),
-        native: false
+        native: false,
+        timezone: '+07:00', // ใช้ timezone ไทย
+        define: {
+            timestamps: true,
+            underscored: false
+        }
     })
     : new Sequelize(
         process.env.DB_NAME,
@@ -32,7 +40,16 @@ const sequelize = process.env.DATABASE_URL
             host: process.env.DB_HOST || 'localhost',
             dialect: 'postgres',
             logging: false,
-            port: parseInt(process.env.DB_PORT || '5432')
+            port: parseInt(process.env.DB_PORT || '5432'),
+            timezone: '+07:00', // ใช้ timezone ไทย
+            dialectOptions: {
+                useUTC: false,
+                timezone: '+07:00'
+            },
+            define: {
+                timestamps: true,
+                underscored: false
+            }
         }
     );
 
