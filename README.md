@@ -2,7 +2,6 @@
 
 ระบบ Point of Sale (POS) อัจฉริยะสำหรับธุรกิจขนาดเล็กถึงขนาดกลาง พัฒนาด้วยเทคโนโลยีล้ำสมัย React.js และ Node.js พร้อมฟีเจอร์ครบครันสำหรับการจัดการร้านค้าแบบครบวงจร
 
-![SmartPOS Banner](https://via.placeholder.com/800x200/4F46E5/FFFFFF?text=SmartPOS+-+Smart+Point+of+Sale+System)
 
 ## ✨ คุณสมบัติเด่น
 
