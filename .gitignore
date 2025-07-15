@@ -1,0 +1,43 @@
+# === SmartPOS Project Specific .gitignore ===
+
+# Environment Variables 
+.env
+api/.env
+web/app/.env.local
+web/app/.env.production
+
+# Dependencies
+node_modules/
+api/node_modules/
+web/app/node_modules/
+
+# Build Outputs
+web/app/build/
+
+# Uploads (ไฟล์ที่ผู้ใช้อัพโหลด)
+api/uploads/
+
+# Vercel Deployment
+.vercel/
+api/.vercel/
+web/app/.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS generated files
+Thumbs.db
+
+# Editor config
+.vscode/
+.idea/
+
+# Package lock 
+package-lock.json
+
+# Cache
+.cache/
+.tmp/
+
+
