@@ -1,126 +1,132 @@
-# Smart Point of Sale (POS) System
+# 🏪 SmartPOS - Smart Point of Sale System
 
-ระบบ Point of Sale (POS) แบบครบวงจรสำหรับธุรกิจขนาดเล็กถึงขนาดกลาง พัฒนาด้วย React.js และ Node.js พร้อมฐานข้อมูล PostgreSQL (Neon)
+ระบบ Point of Sale (POS) อัจฉริยะสำหรับธุรกิจขนาดเล็กถึงขนาดกลาง พัฒนาด้วยเทคโนโลยีล้ำสมัย React.js และ Node.js พร้อมฟีเจอร์ครบครันสำหรับการจัดการร้านค้าแบบครบวงจร
 
-## 🚀 คุณสมบัติหลัก
+![SmartPOS Banner](https://via.placeholder.com/800x200/4F46E5/FFFFFF?text=SmartPOS+-+Smart+Point+of+Sale+System)
 
-- **จัดการสินค้า**: เพิ่ม/แก้ไข/ลบสินค้า พร้อมระบบบาร์โค้ด
-- **อัปโหลดรูปภาพ**: ใช้ Cloudinary สำหรับจัดเก็บรูปภาพสินค้า
-- **จัดการหมวดหมู่**: จัดกลุ่มสินค้าตามประเภท
-- **ระบบขาย**: หน้าจอขายที่ใช้งานง่าย
-- **รายงานยอดขาย**: ติดตามยอดขายรายวัน/เดือน/ปี
-- **จัดการผู้ใช้**: ระบบสมาชิกและการจัดการสิทธิ์
-- **ฐานข้อมูล Cloud**: ใช้ PostgreSQL จาก Neon สำหรับประสิทธิภาพสูง
+## ✨ คุณสมบัติเด่น
+
+### 💰 ระบบขายหน้าร้าน
+- **หน้าจอขายสะดวกใช้** - Interface ที่ออกแบบมาเพื่อความรวดเร็ว
+- **ค้นหาลูกค้า** - ค้นหาด้วยชื่อหรือเบอร์โทรศัพท์
+- **ระบบแต้มสะสม** - สะสมและใช้แต้มเพื่อรับส่วนลด
+- **คำนวณเงินทอนอัตโนมัติ** - ระบบคิดเงินที่แม่นยำ
+- **พิมพ์ใบเสร็จ** - ใบเสร็จดิจิทัลและการพิมพ์
+
+### 📦 จัดการสินค้า
+- **เพิ่ม/แก้ไข/ลบสินค้า** - จัดการข้อมูลสินค้าครบครัน
+- **ระบบบาร์โค้ดอัตโนมัติ** - สร้างบาร์โค้ด EAN-13 อัตโนมัติ
+- **อัปโหลดรูปภาพสินค้า** - รองรับหลายรูปภาพต่อสินค้า
+- **จัดการหมวดหมู่** - จัดกลุ่มสินค้าเป็นหมวดหมู่
+- **ติดตามสต็อก** - เช็คสต็อกสินค้าแบบเรียลไทม์
+
+### 👥 จัดการลูกค้า
+- **ฐานข้อมูลลูกค้า** - เก็บข้อมูลลูกค้าและประวัติการซื้อ
+- **ระบบสมาชิก** - สมัครสมาชิกและจัดการข้อมูลส่วนตัว
+- **ระบบแต้มสะสม** - สะสมแต้มจากการซื้อสินค้า
+- **ของรางวัล** - แลกแต้มเป็นของรางวัลหรือส่วนลด
+
+### 📊 รายงานและวิเคราะห์
+- **Dashboard แบบเรียลไทม์** - ข้อมูลสำคัญในหน้าเดียว
+- **รายงานยอดขาย** - วิเคราะห์ยอดขายรายวัน/เดือน/ปี
+- **รายงานสินค้า** - สินค้าขายดี สินค้าคงคลัง
+- **รายงานกำไร** - วิเคราะห์กำไรขาดทุน
+- **กราฟและชาร์ต** - แสดงผลข้อมูลด้วยกราฟสวยงาม
+
+## 🛠️ เทคโนโลยีที่ใช้
+
+### Frontend
+- **React.js 18+** - JavaScript library สำหรับสร้าง UI
+- **Bootstrap 5** - CSS framework สำหรับ responsive design
+- **Chart.js** - สร้างกราฟและชาร์ต
+- **SweetAlert2** - แสดงข้อความแจ้งเตือนสวยงาม
+- **React Router** - จัดการ navigation
+- **Axios** - HTTP client สำหรับเรียก API
+
+### Backend
+- **Node.js + Express.js** - Server-side JavaScript framework
+- **MySQL + Sequelize ORM** - ฐานข้อมูลและ Object-Relational Mapping
+- **JWT Authentication** - ระบบยืนยันตัวตนแบบ token-based
+- **bcrypt** - เข้ารหัสรหัสผ่าน
+- **Multer** - จัดการการอัปโหลดไฟล์
+- **CORS** - จัดการ Cross-Origin Resource Sharing
+
+### DevOps & Deployment
+- **Vercel** - Platform สำหรับ deploy frontend และ backend
+- **GitHub** - Version control และ CI/CD
+- **MySQL Database** - ฐานข้อมูลสำหรับ production
 
 ## 📋 ความต้องการของระบบ
 
-### Frontend (React.js)
-- Node.js 16+ 
-- npm หรือ yarn
-- React 18+
-- Bootstrap 4
-- Axios
-- SweetAlert2
+- **Node.js** 16 หรือสูงกว่า
+- **npm** หรือ **yarn** package manager
+- **MySQL** 8.0 หรือสูงกว่า
+- **Git** สำหรับ version control
+- **เบราว์เซอร์สมัยใหม่** (Chrome, Firefox, Safari, Edge)
 
-### Backend (Node.js)
-- Node.js 16+
-- Express.js
-- **PostgreSQL 14+ (Neon Database)**
-- Sequelize ORM
-- Cloudinary (สำหรับจัดเก็บรูปภาพ)
-- JWT Authentication
-
-### Database (PostgreSQL - Neon)
-- **Neon Database** (Serverless PostgreSQL)
-- หรือ PostgreSQL 14+ สำหรับ local development
-
-## 🛠️ การติดตั้ง
+## 🚀 การติดตั้งและใช้งาน
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/your-username/Smart-Point-of-Sale.git
-cd Smart-Point-of-Sale
+git clone https://github.com/Jakprim-2004/Smart-Point-of-Sale-Cloud.git
+cd Smart-Point-of-Sale-Cloud
 ```
 
-### 2. ตั้งค่าฐานข้อมูล Neon
-
-1. **สร้างบัญชี Neon**: ไปที่ [neon.tech](https://neon.tech)
-2. **สร้าง Project ใหม่**
-3. **คัดลอก Connection String** (DATABASE_URL)
-
-### 3. ติดตั้ง Backend Dependencies
+### 2. ติดตั้ง Backend Dependencies
 ```bash
 cd api
 npm install
-
-# ติดตั้ง PostgreSQL driver
-npm install pg pg-hstore
-
-# สร้างไฟล์ .env
-cp .env.example .env
 ```
 
-### 4. การตั้งค่า Environment Variables
-
-แก้ไขไฟล์ `.env`:
+### 3. ตั้งค่าฐานข้อมูล
+สร้างไฟล์ `.env` ในโฟลเดอร์ `api`:
 ```env
+# Database Configuration
+DB_HOST=localhost
+DB_NAME=smartpos_db
+DB_USER=root
+DB_PASSWORD=your_password
+DB_PORT=3306
+
 # Server Configuration
 PORT=3001
-NODE_ENV=production
-
-# Neon PostgreSQL Database (Production)
-DATABASE_URL=postgresql://username:password@hostname/database?sslmode=require
-
-# Local PostgreSQL Database (Development - Optional)
-DB_HOST=localhost
-DB_NAME=pos_database
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_PORT=5432
-
-# Cloudinary Configuration
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+NODE_ENV=development
 
 # JWT Secret
-JWT_SECRET=your_jwt_secret_key
+JWT_SECRET=your_jwt_secret_key_here
 
-# CORS Settings
-CORS_ORIGIN=http://localhost:3000,https://your-frontend-domain.vercel.app
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000
 ```
 
-### 5. การตั้งค่าฐานข้อมูล
-
-#### สำหรับ Neon (Production):
+### 4. สร้างฐานข้อมูล
 ```bash
-# ระบบจะใช้ DATABASE_URL โดยอัตโนมัติ
-npm run migrate
-npm run seed  # (ถ้ามี initial data)
-```
-
-#### สำหรับ Local PostgreSQL (Development):
-```bash
-# ติดตั้ง PostgreSQL locally
-# Ubuntu/Debian
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-
-# macOS
-brew install postgresql
-
-# Windows - ดาวน์โหลดจาก postgresql.org
+# เข้าสู่ MySQL
+mysql -u root -p
 
 # สร้างฐานข้อมูล
-createdb pos_database
-
-# รัน migrations
-npm run migrate
+CREATE DATABASE smartpos_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+exit
 ```
 
-### 6. ติดตั้ง Frontend
+### 5. รัน Database Migrations
 ```bash
-cd ../web/app
+cd api
+npm run setup-db
+```
+
+### 6. เริ่มต้น Backend Server
+```bash
+cd api
+npm run dev  # Development mode
+# หรือ
+npm start    # Production mode
+```
+
+### 7. ติดตั้งและรัน Frontend
+```bash
+# เปิด terminal ใหม่
+cd web/app
 npm install
 
 # สร้างไฟล์ config
@@ -130,15 +136,11 @@ cp src/config.example.js src/config.js
 แก้ไขไฟล์ `src/config.js`:
 ```javascript
 const config = {
-  // สำหรับ Development
   api_path: 'http://localhost:3001',
-  
-  // สำหรับ Production
-  // api_path: 'https://your-backend-api.vercel.app',
   
   headers: () => ({
     headers: {
-      'Authorization': 'Bearer ' + localStorage.getItem('pos_token'),
+      'Authorization': 'Bearer ' + localStorage.getItem('token'),
       'Content-Type': 'application/json'
     }
   })
@@ -147,347 +149,145 @@ const config = {
 export default config;
 ```
 
-## 🚀 การรันระบบ
-
-### Development Mode
+### 8. เริ่มต้น Frontend Server
 ```bash
-# เริ่ม Backend Server
-cd api
-npm run dev  # รันที่ port 3001
-
-# เริ่ม Frontend Server (terminal ใหม่)
 cd web/app
-npm start    # รันที่ port 3000
-```
-
-### Production Build
-```bash
-# Build Frontend
-cd web/app
-npm run build
-
-# Deploy Backend
-cd ../../api
 npm start
 ```
 
-## 🗄️ Database Schema (PostgreSQL)
+## 🔐 การเข้าสู่ระบบครั้งแรก
 
-### ตารางหลัก:
-- **products**: สินค้าและข้อมูลพื้นฐาน
-- **product_images**: รูปภาพสินค้า (เชื่อมต่อ Cloudinary)
-- **categories**: หมวดหมู่สินค้า
-- **bill_sales**: รายการขาย
-- **bill_sale_details**: รายละเอียดการขาย
-- **customers**: ข้อมูลลูกค้า
-- **members**: สมาชิก
-- **users**: ผู้ใช้งานระบบ
+1. เปิดเบราว์เซอร์ไปที่ `http://localhost:3000`
+2. คลิก "สมัครสมาชิก" เพื่อสร้างบัญชีผู้ดูแลระบบ
+3. กรอกข้อมูลสำหรับบัญชีแรก
+4. เข้าสู่ระบบด้วยบัญชีที่สร้าง
 
-### การ Migration Database:
-```sql
--- ตัวอย่าง SQL สำหรับ PostgreSQL
-CREATE TABLE products (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    cost DECIMAL(10,2) NOT NULL,
-    barcode VARCHAR(13) UNIQUE NOT NULL,
-    category VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+## 📱 การใช้งานระบบ
 
-CREATE TABLE product_images (
-    id SERIAL PRIMARY KEY,
-    product_id INTEGER REFERENCES products(id),
-    image_name VARCHAR(255),
-    image_url TEXT,  -- Cloudinary URL
-    is_main BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-## 📱 การใช้งาน
-
-### 1. เข้าสู่ระบบ
-- เปิดเบราว์เซอร์ไปที่ `http://localhost:3000`
-
-### 2. จัดการสินค้า
-1. **เพิ่มสินค้าใหม่**:
+### การจัดการสินค้า
+1. **เพิ่มสินค้าใหม่**
+   - ไปที่เมนู "จัดการสินค้า"
    - คลิก "เพิ่มสินค้า"
-   - กรอกข้อมูลสินค้า (ชื่อ, ราคาทุน, ราคาขาย, หมวดหมู่, บาร์โค้ด)
-   - ระบบจะสร้างบาร์โค้ด 13 หลักอัตโนมัติ หรือกรอกเอง
-   - คลิก "บันทึกข้อมูล"
+   - กรอกข้อมูล: ชื่อสินค้า, ราคาทุน, ราคาขาย, หมวดหมู่
+   - ระบบจะสร้างบาร์โค้ดอัตโนมัติ
+   - บันทึกข้อมูล
 
-2. **อัปโหลดรูปภาพสินค้า**:
-   - คลิกปุ่ม "รูปภาพ" (ไอคอนสีน้ำเงิน) ในตารางสินค้า
-   - เลือกไฟล์รูปภาพ (รองรับ JPG, PNG, WEBP)
-   - คลิก "อัพโหลดรูปภาพ" - รูปจะถูกเก็บใน Cloudinary
-   - เลือก "ภาพหลัก" สำหรับรูปที่จะแสดงในหน้าขาย
-   - รองรับหลายรูปต่อสินค้า
+2. **อัปโหลดรูปภาพสินค้า**
+   - คลิกไอคอน "รูปภาพ" ในตารางสินค้า
+   - เลือกไฟล์รูปภาพ
+   - คลิก "อัปโหลด"
 
-3. **จัดการหมวดหมู่**:
-   - คลิก "จัดการหมวดหมู่"
-   - เพิ่ม/แก้ไข/ลบ หมวดหมู่สินค้า
-
-### 3. การขาย
-1. **เลือกสินค้า**:
-   - คลิกสินค้าที่ต้องการขาย
-   - หรือใช้เครื่องอ่านบาร์โค้ด/พิมพ์บาร์โค้ด
+### การขายสินค้า
+1. **เลือกสินค้า**
+   - ไปที่หน้า "ขายสินค้า"
+   - คลิกเลือกสินค้าจากรายการ
+   - หรือค้นหาด้วยชื่อ/บาร์โค้ด
    - กำหนดจำนวน
 
-2. **ชำระเงิน**:
+2. **เลือกลูกค้า (ถ้าต้องการสะสมแต้ม)**
+   - ค้นหาลูกค้าด้วยชื่อหรือเบอร์โทร
+   - เลือกจากรายการที่ค้นหา
+   - ระบบจะแสดงแต้มสะสมปัจจุบัน
+
+3. **ชำระเงิน**
    - ตรวจสอบรายการสินค้า
-   - กรอกจำนวนเงินที่รับ
+   - ใส่จำนวนเงินที่รับ
+   - ระบบคำนวณเงินทอนอัตโนมัติ
    - คลิก "ชำระเงิน"
-   - พิมพ์ใบเสร็จ (ถ้าต้องการ)
 
-### 4. รายงาน
-- **รายงานยอดขาย**: ดูยอดขายรายวัน/เดือน/ปี
-- **รายงานสินค้า**: ดูสถิติสินค้าขายดี
-- **รายงานกำไร**: วิเคราะห์กำไรขาดทุน
+### การจัดการลูกค้า
+1. **เพิ่มลูกค้าใหม่**
+   - ไปที่เมนู "จัดการลูกค้า"
+   - คลิก "เพิ่มลูกค้า"
+   - กรอกข้อมูล: ชื่อ, เบอร์โทร, ที่อยู่
 
-## 🔧 การปรับแต่ง
+2. **จัดการแต้มสะสม**
+   - ดูประวัติการสะสมแต้ม
+   - เพิ่ม/ลดแต้มแบบ manual (สำหรับผู้ดูแล)
 
-### เปลี่ยนการตั้งค่า Cloudinary
-```javascript
-// api/Cloudinary.js
-const cloudinary = require('cloudinary').v2;
+## 🚀 การ Deploy บน Vercel
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// ตั้งค่าโฟลเดอร์สำหรับเก็บรูป
-const storage = CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'smart-pos', // โฟลเดอร์ใน Cloudinary
-    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
-    transformation: [
-      { width: 800, height: 600, crop: 'limit' },
-      { quality: 'auto' }
-    ]
-  },
-});
-```
-
-### การตั้งค่า PostgreSQL Connection Pool
-```javascript
-// api/connect.js
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false
-    }
-  },
-  pool: {
-    max: 5,        // จำนวน connection สูงสุด
-    min: 0,        // จำนวน connection ต่ำสุด
-    acquire: 60000, // เวลารอ connection (ms)
-    idle: 10000    // เวลา idle ก่อนปิด connection
-  }
-});
-```
-
-### เปลี่ยนธีมหรือสีของระบบ
-```css
-/* web/app/src/index.css */
-:root {
-  --primary-color: #007bff;
-  --secondary-color: #6c757d;
-  --success-color: #28a745;
-  --danger-color: #dc3545;
-  --warning-color: #ffc107;
-  --info-color: #17a2b8;
-}
-```
-
-## 🚀 การ Deploy
-
-### Deploy Frontend บน Vercel
+### Deploy Frontend
 ```bash
 cd web/app
 npm install -g vercel
 vercel
 
-# ตั้งค่า Environment Variables ใน Vercel Dashboard:
-# REACT_APP_API_URL=https://your-backend-api.vercel.app
+# ตั้งค่า Environment Variables ใน Vercel Dashboard
+# REACT_APP_API_URL=https://your-api-domain.vercel.app
 ```
 
-### Deploy Backend บน Vercel
+### Deploy Backend
 ```bash
 cd api
 vercel
 
-# ตั้งค่า Environment Variables ใน Vercel:
-# DATABASE_URL=postgresql://...  (จาก Neon)
-# CLOUDINARY_CLOUD_NAME=...
-# CLOUDINARY_API_KEY=...
-# CLOUDINARY_API_SECRET=...
-# JWT_SECRET=...
+# ตั้งค่า Environment Variables ใน Vercel Dashboard
+# DB_HOST=your_mysql_host
+# DB_NAME=your_database_name
+# DB_USER=your_username
+# DB_PASSWORD=your_password
+# JWT_SECRET=your_jwt_secret
 ```
 
-### การตั้งค่า Neon Database สำหรับ Production
+## 🗂️ โครงสร้างโปรเจค
 
-1. **Login เข้า Neon Console**: [console.neon.tech](https://console.neon.tech)
-2. **สร้าง Branch**: สร้าง branch แยกสำหรับ production และ development
-3. **Connection Pooling**: เปิดใช้งาน connection pooler สำหรับประสิทธิภาพ
-4. **Backup Settings**: ตั้งค่า backup อัตโนมัติ
-
-```env
-# Production Environment Variables
-DATABASE_URL=postgresql://user:pass@hostname/dbname?sslmode=require&pgbouncer=true
+```
+Smart-Point-of-Sale-Cloud/
+├── api/                          # Backend (Node.js + Express)
+│   ├── controllers/              # API Controllers
+│   ├── models/                   # Database Models (Sequelize)
+│   ├── utils/                    # Utility functions
+│   ├── index.js                  # Main server file (Vercel)
+│   ├── server.js                 # Local development server
+│   └── package.json              # Backend dependencies
+├── web/app/                      # Frontend (React.js)
+│   ├── public/                   # Static files
+│   ├── src/
+│   │   ├── components/           # Reusable components
+│   │   ├── pages/                # Page components
+│   │   ├── styles/               # CSS files
+│   │   ├── config.js             # API configuration
+│   │   └── index.js              # Main React file
+│   └── package.json              # Frontend dependencies
+├── package.json                  # Root package.json
+└── README.md                     # This file
 ```
 
-## 🐛 การแก้ไขปัญหา
+## 🔒 ความปลอดภัย
 
-### ปัญหาที่พบบ่อย
+- **JWT Authentication** - ระบบยืนยันตัวตนด้วย JSON Web Token
+- **Password Encryption** - เข้ารหัสรหัสผ่านด้วย bcrypt
+- **Input Validation** - ตรวจสอบข้อมูลก่อนบันทึก
+- **SQL Injection Protection** - ใช้ Sequelize ORM ป้องกัน
+- **CORS Configuration** - จำกัดการเข้าถึงจาก domain ที่อนุญาต
 
-1. **รูปภาพไม่แสดง**:
-   - ตรวจสอบการตั้งค่า Cloudinary API keys
-   - ดู Network tab ใน Developer Tools
-   - ตรวจสอบ CORS settings
-   - ตรวจสอบว่า imageUrl ถูกบันทึกในฐานข้อมูล
 
-2. **PostgreSQL/Neon เชื่อมต่อไม่ได้**:
-   - ตรวจสอบ DATABASE_URL ใน .env
-   - ตรวจสอบว่า SSL certificate ถูกต้อง
-   - ตรวจสอบ connection pooling settings
-   - ลองเทสการเชื่อมต่อ: `npm run db:test`
+## 📄 License
 
-3. **API ไม่ทำงาน**:
-   - ตรวจสอบ port ที่ใช้
-   - ดู console logs ใน backend
-   - ตรวจสอบ CORS configuration
-   - ตรวจสอบ JWT token expiration
+โปรเจคนี้เป็น open source 
 
-4. **Migration ล้มเหลว**:
-   ```bash
-   # รีเซ็ต migrations
-   npm run db:reset
-   npm run migrate
-   ```
+## 👨‍💻 ผู้พัฒนา
 
-### Debug Commands
-```bash
-# ตรวจสอบการเชื่อมต่อฐานข้อมูล
-npm run db:test
+- **Jakprim-2004** - *Lead Developer* - [@Jakprim-2004](https://github.com/Jakprim-2004)
 
-# ดู Database schema
-npm run db:schema
 
-# เปิด debug mode สำหรับ backend
-DEBUG=* npm run dev
-
-# ตรวจสอบ Cloudinary connection
-npm run cloudinary:test
-```
-
-### Database Queries สำหรับ Debug
-```sql
--- ตรวจสอบข้อมูลสินค้าและรูปภาพ
-SELECT 
-  p.id, 
-  p.name, 
-  p.barcode,
-  pi.image_url,
-  pi.is_main
-FROM products p
-LEFT JOIN product_images pi ON p.id = pi.product_id
-ORDER BY p.id;
-
--- ตรวจสอบรูปภาพที่ไม่มี URL
-SELECT * FROM product_images WHERE image_url IS NULL OR image_url = '';
-
--- อัปเดตรูปภาพเก่าให้มี URL (Migration)
-UPDATE product_images 
-SET image_url = 'https://res.cloudinary.com/your-cloud/image/upload/v1234567890/smart-pos/' || image_name || '.jpg'
-WHERE image_url IS NULL AND image_name IS NOT NULL;
-```
-
-## 🔒 Security Features
-
-- **JWT Authentication**: ระบบ token-based authentication
-- **Password Hashing**: ใช้ bcrypt สำหรับเข้ารหัสรหัสผ่าน
-- **SSL/TLS**: การเชื่อมต่อฐานข้อมูล Neon ผ่าน SSL
-- **CORS Protection**: ป้องกันการเข้าถึงจาก domain ที่ไม่ได้รับอนุญาต
-- **Input Validation**: ตรวจสอบข้อมูลก่อนบันทึก
-- **SQL Injection Protection**: ใช้ Sequelize ORM ป้องกัน SQL injection
-
-## ⚡ Performance Optimization
-
-### Database (Neon PostgreSQL)
-- **Connection Pooling**: จัดการ connection อย่างมีประสิทธิภาพ
-- **Indexing**: สร้าง index สำหรับการค้นหาที่เร็วขึ้น
-- **Query Optimization**: ใช้ Sequelize optimized queries
-
-### Image Storage (Cloudinary)
-- **Automatic Optimization**: รูปภาพถูก optimize อัตโนมัติ
-- **CDN**: ใช้ global CDN สำหรับโหลดรูปเร็วขึ้น
-- **Responsive Images**: รองรับรูปภาพหลายขนาด
-
-### Frontend Optimization
-- **Code Splitting**: แบ่งโหลด JavaScript เป็นส่วนๆ
-- **Lazy Loading**: โหลดข้อมูลเมื่อจำเป็น
-- **Caching**: ใช้ browser cache อย่างเหมาะสม
-
-## 🛠️ Technology Stack
-
-### Backend
-- **Node.js + Express.js**: Server framework
-- **PostgreSQL (Neon)**: Serverless database
-- **Sequelize ORM**: Database abstraction layer
-- **Cloudinary**: Image storage and optimization
-- **JWT**: Authentication
-- **bcrypt**: Password hashing
-
-### Frontend
-- **React.js**: UI framework
-- **Bootstrap 4**: CSS framework
-- **Axios**: HTTP client
-- **SweetAlert2**: Alert dialogs
-- **React Router**: Navigation
-
-### DevOps & Deployment
-- **Vercel**: Hosting platform
-- **Neon**: Serverless PostgreSQL
-- **GitHub**: Version control
-- **npm**: Package management
-
-## 👥 ผู้พัฒนา
-
-- **Kaimuk** - *Initial work* - [YourGitHub](https://github.com/jakprim-2004)
-
-## 🙏 กิตติกรรมประกาศ
-
-- [React.js](https://reactjs.org/)
-- [Node.js](https://nodejs.org/)
-- [Express.js](https://expressjs.com/)
-- [PostgreSQL](https://postgresql.org/)
-- [Neon Database](https://neon.tech/)
-- [Sequelize](https://sequelize.org/)
-- [Cloudinary](https://cloudinary.com/)
-- [Bootstrap](https://getbootstrap.com/)
-- [Vercel](https://vercel.com/)
+- [React.js](https://reactjs.org/) - UI Library
+- [Node.js](https://nodejs.org/) - JavaScript Runtime
+- [Express.js](https://expressjs.com/) - Web Framework
+- [MySQL](https://mysql.com/) - Database
+- [Sequelize](https://sequelize.org/) - ORM
+- [Bootstrap](https://getbootstrap.com/) - CSS Framework
+- [Chart.js](https://chartjs.org/) - Charting Library
+- [Vercel](https://vercel.com/) - Deployment Platform
 
 ---
 
+## 🌟 Star ให้กำลังใจ
 
-### 📞 Quick Start Guide
+หากคุณชชอบโปรเจคนี้ อย่าลืม ⭐ Star ให้กำลังใจครับ!
 
-1. **สร้างบัญชี Neon**: [neon.tech](https://neon.tech)
-2. **สร้างบัญชี Cloudinary**: [cloudinary.com](https://cloudinary.com)
-3. **Clone โปรเจกต์และติดตั้ง dependencies**
-4. **ตั้งค่า environment variables**
-5. **รัน migration และ seed data**
-6. **เริ่มใช้งานระบบ POS**
+---
 
-🎉 **Happy Coding!**
-"# Smart-Point-of-Sale-Cloud" 
-"# Smart-Point-of-Sale-Cloud" 
-"# Smart-Point-of-Sale-Cloud" 
+**Made with ❤️ in Thailand** 🇹🇭
+ 
