@@ -221,12 +221,17 @@ vercel
 cd api
 vercel
 
-# ตั้งค่า Environment Variables ใน Vercel Dashboard
-# DB_HOST=your_mysql_host
-# DB_NAME=your_database_name
-# DB_USER=your_username
-# DB_PASSWORD=your_password
-# JWT_SECRET=your_jwt_secret
+#secret=MYKEY
+# Neon PostgreSQL Database
+#DATABASE_URL=
+#DB_USER=
+#DB_PASSWORD=
+#DB_HOST=
+#DB_PORT=5432
+# Cloudinary Configuration
+#CLOUDINARY_CLOUD_NAME=
+#CLOUDINARY_API_KEY=
+#CLOUDINARY_API_SECRET=
 ```
 
 ## 🗂️ โครงสร้างโปรเจค
