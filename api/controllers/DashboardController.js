@@ -256,8 +256,8 @@ router.get('/reportTopSellingProducts', async (req, res) => {
       };
     });
 
-    // Sort by totalAmount
-    results.sort((a, b) => b.totalAmount - a.totalAmount);
+    // Sort by totalQty (quantity sold) instead of totalAmount
+    results.sort((a, b) => b.totalQty - a.totalQty);
     
     // Take top 5 or use default if empty
     const topResults = results.length > 0 ? results.slice(0, 5) : [{
@@ -324,7 +324,7 @@ router.get('/reportTopSellingCategories', async (req, res) => {
       },
       group: ['product.id', 'product.category'],
       having: sequelize.literal('SUM(qty) > 0'),
-      order: [[sequelize.fn('SUM', sequelize.literal('qty * "billSaleDetail"."price"')), 'DESC']],
+      order: [[sequelize.fn('SUM', sequelize.col('qty')), 'DESC']], // เรียงตามจำนวนชิ้นที่ขายได้
       limit: 5
     });
 
@@ -383,7 +383,7 @@ router.get('/reportTopSellingCategoriesRaw', async (req, res) => {
         AND bsd.createdAt < :endDate
       GROUP BY p.category
       HAVING SUM(bsd.qty) > 0
-      ORDER BY totalAmount DESC
+      ORDER BY totalQty DESC
       LIMIT 5
     `, {
       replacements: {

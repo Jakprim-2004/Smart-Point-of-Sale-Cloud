@@ -370,7 +370,7 @@ app.get('/billSale/list', service.isLogin, async (req, res) => {
     try {
         // ดึงรายการบิลทั้งหมด
         const results = await BillSaleModel.findAll({
-            attributes: ['id', 'createdAt', 'paymentMethod', 'status', 'userId','totalAmount', 'description'],
+            attributes: ['id', 'payDate', 'paymentMethod', 'status', 'userId','totalAmount', 'description'],
             order: [['id', 'DESC']],
             where: {
                 status: 'pay',

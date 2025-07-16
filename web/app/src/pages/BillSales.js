@@ -55,7 +55,7 @@ function BillSales() {
     if (startDate && endDate) {
       filtered = filtered.filter(bill => {
         // แยกวันที่จาก ISO string โดยตรง
-        const isoString = bill.createdAt;
+        const isoString = bill.payDate;
         const [datePart] = isoString.split('T');
         const [year, month, day] = datePart.split('-');
         const billDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -142,7 +142,7 @@ function BillSales() {
                             <td>
                               {(() => {
                                 // แยกวันที่และเวลาจาก ISO string โดยตรง ไม่ให้ JavaScript แปลง timezone
-                                const isoString = item.createdAt;
+                                const isoString = item.payDate;
                                 const [datePart, timePart] = isoString.split('T');
                                 const [year, month, day] = datePart.split('-');
                                 const [hour, minute] = timePart.split(':');
@@ -207,9 +207,9 @@ function BillSales() {
                 <div className="card-body p-3">
                   <h6 className="text-muted mb-2">วันที่ออกบิล</h6>
                   <p className="mb-0">
-                    {selectBill?.createdAt && (() => {
+                    {selectBill?.payDate && (() => {
                       // แยกวันที่และเวลาจาก ISO string โดยตรง ไม่ให้ JavaScript แปลง timezone
-                      const isoString = selectBill.createdAt;
+                      const isoString = selectBill.payDate;
                       const [datePart, timePart] = isoString.split('T');
                       const [year, month, day] = datePart.split('-');
                       const [hour, minute] = timePart.split(':');
@@ -257,7 +257,7 @@ function BillSales() {
             <div className="col-md-4">
               <div className="card bg-primary text-white border-0">
                 <div className="card-body p-3">
-                  <h6 className="mb-2">ยอดรวมทั้งสิ้น (รวม VAT)</h6>
+                  <h6 className="mb-2">ยอดรวมทั้งสิ้น </h6>
                   <h4 className="mb-0">
                     ฿{selectBill?.totalAmount?.toLocaleString('th-TH')}
                   </h4>
@@ -307,7 +307,6 @@ function BillSales() {
                         </td>
                         <td className="text-end">
                           <div>฿{parseInt(item.price).toLocaleString("th-TH")}</div>
-                          <small className="text-muted">VAT: ฿{(item.price * 0.07).toLocaleString("th-TH")}</small>
                         </td>
                         <td className="text-end">{item.qty} ชิ้น</td>
                       </tr>

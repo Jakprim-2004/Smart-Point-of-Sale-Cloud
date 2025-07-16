@@ -180,16 +180,11 @@ function Dashboard() {
 
  
 
- 
-
- 
-
- 
-
 const renderTopSellingContent = () => {
   if (topSellingViewType === 'products') {
-    const totalAmount = topSellingProducts.reduce((sum, item) =>
-      sum + parseFloat(item.totalAmount || 0), 0);
+    // คำนวณจำนวนรวมทั้งหมดสำหรับการคำนวณเปอร์เซ็นต์
+    const totalQty = topSellingProducts.reduce((sum, item) =>
+      sum + parseInt(item.totalQty || 0), 0);
 
     return topSellingProducts.length > 0 ? (
         <div className="top-selling-container p-2">
@@ -201,14 +196,14 @@ const renderTopSellingContent = () => {
               const actualQty = parseInt(item.totalQty || 0);
                 
                 let percentage = "0.00";
-                if (totalAmount > 0) {
-                  percentage = ((amount / totalAmount) * 100).toFixed(2);
+                if (totalQty > 0) {
+                  percentage = ((actualQty / totalQty) * 100).toFixed(2);
                 } else if (index === 0 && topSellingProducts.length === 1) {
                   percentage = "100.00";
                 }
                 
-                // Calculate width for progress bar based on percentage
-                const barWidth = totalAmount > 0 ? `${Math.max(percentage, 5)}%` : '5%';
+                // Calculate width for progress bar based on quantity percentage
+                const barWidth = totalQty > 0 ? `${Math.max(percentage, 5)}%` : '5%';
               
               return (
                 <div
@@ -246,16 +241,16 @@ const renderTopSellingContent = () => {
                       <div className="mb-2">
                         <div className="d-flex justify-content-between">
                           <h5 style={{ fontWeight: 'bold', color: '#333' }}>{productName}</h5>
-                          <span className="text-primary fw-bold">฿{amount.toLocaleString('th-TH')}</span>
+                          <span className="text-success fw-bold" style={{ fontSize: '1.2rem' }}>{actualQty} ชิ้น</span>
                         </div>
                         
                         <div className="d-flex justify-content-between text-muted small">
-                          <div><i className="fas fa-box me-1"></i> {actualQty} ชิ้น</div>
+                          <div><i className="fas fa-dollar-sign me-1"></i> ฿{amount.toLocaleString('th-TH')}</div>
                           <div>{percentage}%</div>
                         </div>
                       </div>
                       
-                      {/* Progress bar */}
+                       {/* Progress bar แสดงตามจำนวนที่ขาย */}
                       <div className="progress mt-2" style={{ height: '6px' }}>
                         <div 
                           className="progress-bar" 
@@ -283,8 +278,9 @@ const renderTopSellingContent = () => {
       </div>
     );
   } else {
-    const totalAmount = topSellingCategories.reduce((sum, item) =>
-      sum + parseFloat(item.totalAmount || 0), 0);
+    // คำนวณจำนวนรวมทั้งหมดสำหรับหมวดหมู่
+    const totalQty = topSellingCategories.reduce((sum, item) =>
+      sum + parseInt(item.totalQty || 0), 0);
 
     return topSellingCategories.length > 0 ? (
         <div className="top-selling-container p-2">
@@ -296,14 +292,16 @@ const renderTopSellingContent = () => {
                 const amount = parseFloat(item.totalAmount || 0);
                 const qty = parseInt(item.totalQty || 0);
                 
-                // Safe percentage calculation
-                let percentage = item.percentage || "0.00";
-                if (!item.percentage && totalAmount > 0) {
-                  percentage = ((amount / totalAmount) * 100).toFixed(2);
+                // Calculate percentage based on quantity
+                let percentage = "0.00";
+                if (totalQty > 0) {
+                  percentage = ((qty / totalQty) * 100).toFixed(2);
+                } else if (index === 0 && topSellingCategories.length === 1) {
+                  percentage = "100.00";
                 }
                 
-                // Calculate width for progress bar
-                const barWidth = totalAmount > 0 ? `${Math.max(percentage, 5)}%` : '5%';
+                // Calculate width for progress bar based on quantity percentage
+                const barWidth = totalQty > 0 ? `${Math.max(percentage, 5)}%` : '5%';
               
               return (
                 <div
@@ -341,16 +339,16 @@ const renderTopSellingContent = () => {
                       <div className="mb-2">
                         <div className="d-flex justify-content-between">
                           <h5 style={{ fontWeight: 'bold', color: '#333' }}>{categoryName}</h5>
-                          <span className="text-primary fw-bold">฿{amount.toLocaleString('th-TH')}</span>
+                          <span className="text-success fw-bold" style={{ fontSize: '1.2rem' }}>{qty} ชิ้น</span>
                         </div>
                         
                         <div className="d-flex justify-content-between text-muted small">
-                          <div><i className="fas fa-box me-1"></i> {qty} ชิ้น</div>
+                          <div><i className="fas fa-dollar-sign me-1"></i> ฿{amount.toLocaleString('th-TH')}</div>
                           <div>{percentage}%</div>
                         </div>
                       </div>
                       
-                      {/* Progress bar */}
+                      {/* Progress bar แสดงตามจำนวนที่ขาย */}
                       <div className="progress mt-2" style={{ height: '6px' }}>
                         <div 
                           className="progress-bar" 
