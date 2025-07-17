@@ -222,9 +222,7 @@ app.post('/billSale/endSale', service.isLogin, async (req, res) => {
         const now = new Date();
         const currentTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // เพิ่ม 7 ชั่วโมง
         
-        console.log('Received customer ID:', customerId, 'Type:', typeof customerId);
-        console.log('End sale time (Thai):', currentTime.toISOString());
-        console.log('End sale time (Thai local):', currentTime.toLocaleString('th-TH'));
+        
         
         // สร้าง update payload โดยไม่รวม customerId ก่อน
         const updatePayload = {
@@ -246,9 +244,7 @@ app.post('/billSale/endSale', service.isLogin, async (req, res) => {
                     const customer = await CustomerModel.findByPk(customerIdInt);
                     if (customer) {
                         updatePayload.customerId = customerIdInt;
-                        console.log(`พบข้อมูลลูกค้า ID: ${customerIdInt}`);
                     } else {
-                        console.log(`ไม่พบข้อมูลลูกค้า ID: ${customerIdInt}`);
                     }
                 }
             } catch (err) {
@@ -256,14 +252,12 @@ app.post('/billSale/endSale', service.isLogin, async (req, res) => {
             }
         }
         
-        console.log('Updating bill with payload:', updatePayload);
         const updatedBill = await BillSaleModel.update(updatePayload, {
             where: {
                 status: 'open',
                 userId: service.getMemberId(req)
             }
         });
-        console.log('Bill update result:', updatedBill);
 
         for (const detail of billSaleDetails) {
             const subtotal = detail.qty * detail.price;

@@ -87,15 +87,12 @@ function Dashboard() {
     try {
       const url = config.api_path + "/reportTopSellingProducts";
       const res = await axios.get(url, config.headers());
-      console.log("Top selling products API response:", res.data);
       
       if (res.data.message === "success") {
         const filteredResults = res.data.results.slice(0, 5);
-        console.log("Filtered top selling products:", filteredResults);
         setTopSellingProducts(filteredResults);
       }
     } catch (e) {
-      console.error("Error fetching top selling products:", e);
       Swal.fire({
         title: "error",
         text: e.message,
@@ -108,7 +105,6 @@ function Dashboard() {
     try {
       const url = config.api_path + "/reportTopSellingCategories";
       const res = await axios.get(url, config.headers());
-      console.log("Categories API response:", res.data); // Add logging to debug
       
       if (res.data.message === "success") {
         // Don't filter by status as API now does the filtering correctly

@@ -524,7 +524,6 @@ function Sale() {
           id: Number(customer.id)
         }));
         setCustomers(formattedCustomers);
-        console.log("Loaded customers:", formattedCustomers);
       }
     } catch (error) {
       console.error("Error loading customers:", error);

@@ -615,7 +615,6 @@ router.post('/reportSalesByDateRange', async (req, res) => {
     const userId = service.getMemberId(req);
     const { dateRange, customStartDate, customEndDate } = req.body;
     
-    console.log('ReportSalesByDateRange input:', { dateRange, customStartDate, customEndDate, userId });
     
     let startDate, endDate;
     const now = new Date();
@@ -634,7 +633,6 @@ router.post('/reportSalesByDateRange', async (req, res) => {
       endDate = new Date(customEndDate + 'T23:59:59.999');
       
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        console.log('Invalid dates:', { startDate, endDate });
         return res.send({
           message: 'success',
           results: []
@@ -687,12 +685,7 @@ router.post('/reportSalesByDateRange', async (req, res) => {
       }
     }
     
-    console.log('Final date range for query:', { 
-      startDate: startDate.toISOString(), 
-      endDate: endDate.toISOString(),
-      startDateLocal: startDate.toLocaleString('th-TH'),
-      endDateLocal: endDate.toLocaleString('th-TH')
-    });
+   
     
     const results = await BillSaleDetailModel.findAll({
       attributes: [
@@ -749,7 +742,6 @@ router.post('/productDetails', async (req, res) => {
     const userId = service.getMemberId(req);
     const { startDate, endDate, dateRange } = req.body;
     
-    console.log('ProductDetails input:', { startDate, endDate, dateRange, userId });
     
     // Handle date parsing with proper timezone
     let start, end;
@@ -769,12 +761,7 @@ router.post('/productDetails', async (req, res) => {
       end.setHours(23, 59, 59, 999);
     }
     
-    console.log('Final date range for productDetails:', { 
-      start: start.toISOString(), 
-      end: end.toISOString(),
-      startLocal: start.toLocaleString('th-TH'),
-      endLocal: end.toLocaleString('th-TH')
-    });
+   
 
     // เรียกข้อมูลแบบรายวัน โดยอย่าเพิ่ม cost/price ในการ GROUP BY
     const results = await BillSaleDetailModel.findAll({
@@ -906,7 +893,6 @@ router.post('/reportTopSalesDays', async (req, res) => {
     const userId = service.getMemberId(req);
     const { startDate, endDate } = req.body;
     
-    console.log('ReportTopSalesDays input:', { startDate, endDate, userId });
     
     // Handle date parsing with proper timezone
     let start, end;
@@ -928,12 +914,7 @@ router.post('/reportTopSalesDays', async (req, res) => {
       start = new Date(thai30DaysAgo);
     }
     
-    console.log('Final date range for reportTopSalesDays:', { 
-      start: start.toISOString(), 
-      end: end.toISOString(),
-      startLocal: start.toLocaleString('th-TH'),
-      endLocal: end.toLocaleString('th-TH')
-    });
+ 
 
     const results = await BillSaleDetailModel.findAll({
       attributes: [
