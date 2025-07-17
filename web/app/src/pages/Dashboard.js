@@ -241,7 +241,7 @@ const renderTopSellingContent = () => {
                         </div>
                         
                         <div className="d-flex justify-content-between text-muted small">
-                          <div><i className="fas fa-dollar-sign me-1"></i> ฿{amount.toLocaleString('th-TH')}</div>
+                          <div> ฿{amount.toLocaleString('th-TH')}</div>
                           <div>{percentage}%</div>
                         </div>
                       </div>
@@ -339,7 +339,7 @@ const renderTopSellingContent = () => {
                         </div>
                         
                         <div className="d-flex justify-content-between text-muted small">
-                          <div><i className="fas fa-dollar-sign me-1"></i> ฿{amount.toLocaleString('th-TH')}</div>
+                          <div> ฿{amount.toLocaleString('th-TH')}</div>
                           <div>{percentage}%</div>
                         </div>
                       </div>

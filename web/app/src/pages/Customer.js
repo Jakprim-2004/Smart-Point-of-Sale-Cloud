@@ -20,6 +20,21 @@ function Customer() {
         loadCustomers();
     }, []);
 
+    
+    const handlePhoneChange = (e) => {
+        const value = e.target.value.replace(/\D/g, ''); 
+        if (value.length <= 10) {
+            setNewCustomer(prev => ({ ...prev, phone: value }));
+        }
+    };
+
+    const handleEditPhoneChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); // ลบทุกอย่างที่ไม่ใช่ตัวเลข
+    if (value.length <= 10) {
+        setEditCustomer(prev => ({ ...prev, phone: value }));
+    }
+};
+
     const loadCustomers = async () => {
         try {
             const response = await axios.get(
@@ -140,7 +155,7 @@ function Customer() {
                                             type="tel"
                                             className="form-control"
                                             value={newCustomer.phone}
-                                            onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})}
+                                            onChange={handlePhoneChange}
                                             pattern="[0-9]{10}"
                                             title="กรุณากรอกเบอร์โทรศัพท์ 10 หลัก"
                                             required
@@ -195,7 +210,7 @@ function Customer() {
                                             type="text"
                                             className="form-control"
                                             value={editCustomer.phone}
-                                            onChange={(e) => setEditCustomer({...editCustomer, phone: e.target.value})}
+                                            onChange={handleEditPhoneChange}
                                         />
                                     ) : customer.phone}
                                 </td>
