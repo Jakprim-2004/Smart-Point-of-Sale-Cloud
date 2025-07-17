@@ -1,6 +1,6 @@
 const config = {
     // ใช้ Backend URL จาก Vercel (แทน localhost)
-    api_path: process.env.REACT_APP_API_URL || 'https://backendpos-two.vercel.app',
+    api_path: process.env.REACT_APP_API_URL ,
     token_name: 'pos_token',
     headers: () => {
         const token = localStorage.getItem(config.token_name);
