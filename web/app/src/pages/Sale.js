@@ -1087,7 +1087,6 @@ function Sale() {
               <div className="alert alert-muted mb-3">
                 <h6 className="mb-1">ข้อมูลลูกค้า</h6>
                 <div><strong>ชื่อ:</strong> {selectedCustomer.name}</div>
-                <div><strong>เบอร์โทร:</strong> {selectedCustomer.phone}</div>
                 <div><strong>แต้มสะสม:</strong> {selectedCustomer.points || 0} แต้ม</div>
                
                 <div className="mt-2 text-success">
@@ -1244,7 +1243,7 @@ function Sale() {
               <span style={{ flex: 1, textAlign: "right" }}>
                 {lastBill?.billSaleDetails
                   ? lastBill.billSaleDetails.reduce((sum, item) => sum + (parseFloat(item.qty) * parseFloat(item.price)), 0).toLocaleString("th-TH", { minimumFractionDigits: 2 })
-                  : "0.00"} บาท
+                  : "0"} บาท
               </span>
             </div>
           </div>
@@ -1265,19 +1264,13 @@ function Sale() {
         <div style={{ padding: "10px" }}>
           {/* โลโก้หรือชื่อร้าน */}
           <div style={{ textAlign: "center", marginBottom: "8px" }}>
-            <div style={{ fontWeight: "bold", fontSize: "16px" }}>
-              {memberInfo?.name || "ชื่อร้านค้า"}
-            </div>
+           
             {memberInfo?.address && (
               <div style={{ fontSize: "11px", color: "#666" }}>
                 {memberInfo.address}
               </div>
             )}
-            {memberInfo?.phone && memberInfo.phone !== "0656922937" && (
-              <div style={{ fontSize: "11px", color: "#666" }}>
-                โทร: {memberInfo.phone}
-              </div>
-            )}
+            
             {memberInfo?.line && (
               <div style={{ fontSize: "11px", color: "#666" }}>
                 Line: {memberInfo.line}
@@ -1294,22 +1287,22 @@ function Sale() {
           <hr style={{ border: "none", borderTop: "1px dashed #888" }} />
 
           {/* Items Table */}
-          <table style={{ width: "100%", marginBottom: "8px" }}>
+          <table style={{ width: "100%", marginBottom: "8px", borderCollapse: "separate", borderSpacing: "0 2px" }}>
             <thead>
               <tr>
-                <th style={{ textAlign: "left", fontSize: "13px" }}>รายการ</th>
-                <th style={{ textAlign: "center", fontSize: "13px" }}>จำนวน</th>
-                <th style={{ textAlign: "right", fontSize: "13px" }}>ราคา</th>
-                <th style={{ textAlign: "right", fontSize: "13px" }}>รวม</th>
+                <th style={{ textAlign: "left", fontSize: "13px", paddingRight: "8px" }}>รายการ</th>
+                <th style={{ textAlign: "center", fontSize: "13px", paddingLeft: "4px", paddingRight: "4px" }}>จำนวน</th>
+                <th style={{ textAlign: "right", fontSize: "13px", paddingLeft: "8px", paddingRight: "8px" }}>ราคา</th>
+                <th style={{ textAlign: "right", fontSize: "13px", paddingLeft: "8px" }}>รวม</th>
               </tr>
             </thead>
             <tbody>
               {lastBill?.billSaleDetails?.map((item, index) => (
                 <tr key={index}>
-                  <td style={{ textAlign: "left" }}>{item.product.name || "-"}</td>
-                  <td style={{ textAlign: "center" }}>{item.qty || 1}</td>
-                  <td style={{ textAlign: "right" }}>{Number(item.price).toLocaleString("th-TH", { minimumFractionDigits: 2 })}</td>
-                  <td style={{ textAlign: "right" }}>{(item.qty * item.price).toLocaleString("th-TH", { minimumFractionDigits: 2 })}</td>
+                  <td style={{ textAlign: "left", paddingRight: "8px", paddingTop: "2px", paddingBottom: "2px" }}>{item.product.name || "-"}</td>
+                  <td style={{ textAlign: "center", paddingLeft: "4px", paddingRight: "4px", paddingTop: "2px", paddingBottom: "2px" }}>{item.qty || 1}</td>
+                  <td style={{ textAlign: "right", paddingLeft: "8px", paddingRight: "8px", paddingTop: "2px", paddingBottom: "2px" }}>{parseInt(item.price).toLocaleString("th-TH")}</td>
+                  <td style={{ textAlign: "right", paddingLeft: "8px", paddingTop: "2px", paddingBottom: "2px" }}>{parseInt(item.qty * item.price).toLocaleString("th-TH")}</td>
                 </tr>
               ))}
             </tbody>
@@ -1322,14 +1315,17 @@ function Sale() {
             display: "flex",
             justifyContent: "space-between",
             marginBottom: "8px",
-            width: "100%"
+            marginTop: "8px",
+            width: "100%",
+            paddingTop: "4px",
+            fontWeight: "bold"
           }}>
             {/* คำนวณยอดรวมจาก lastBill.billSaleDetails ใน slip */}
             <span style={{ flex: 1, textAlign: "left" }}>รวมทั้งสิ้น:</span>
-            <span style={{ flex: 1, textAlign: "right" }}>
+            <span style={{ flex: 1, textAlign: "right", paddingLeft: "20px" }}>
               {lastBill?.billSaleDetails
-                ? lastBill.billSaleDetails.reduce((sum, item) => sum + (parseFloat(item.qty) * parseFloat(item.price)), 0).toLocaleString("th-TH", { minimumFractionDigits: 2 })
-                : "0.00"} บาท
+                ? parseInt(lastBill.billSaleDetails.reduce((sum, item) => sum + (parseFloat(item.qty) * parseFloat(item.price)), 0)).toLocaleString("th-TH")
+                : "0"} บาท
             </span>
           </div>
 
