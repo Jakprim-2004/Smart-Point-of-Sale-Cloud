@@ -31,21 +31,11 @@ const storage = new CloudinaryStorage({
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit - เพิ่มจาก 5MB เพื่อรองรับภาพคุณภาพสูง
-    files: 1, // จำกัดการอัปโหลดเป็นไฟล์เดียวต่อ request
-    fields: 10, // จำกัดจำนวน field ใน form
-    fieldNameSize: 100, // จำกัดขนาดชื่อ field
-    fieldSize: 1024 * 1024 // จำกัดขนาดข้อมูลในแต่ละ field เป็น 1MB
+    fileSize: 5 * 1024 * 1024, // 5MB limit
   },
   fileFilter: (req, file, cb) => {
     // ตรวจสอบประเภทไฟล์
     if (file.mimetype.startsWith('image/')) {
-      // เพิ่มการตรวจสอบนามสกุลไฟล์เพื่อความปลอดภัย
-      const allowedExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
-      if (!allowedExtensions.test(file.originalname)) {
-        cb(new Error('Invalid file extension. Only JPG, JPEG, PNG, GIF, and WEBP are allowed!'), false);
-        return;
-      }
       cb(null, true);
     } else {
       cb(new Error('Only image files are allowed!'), false);

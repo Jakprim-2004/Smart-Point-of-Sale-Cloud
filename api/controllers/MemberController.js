@@ -53,12 +53,7 @@ app.post("/member/signin", async (req, res) => {
     if (member) {
       const validPassword = await comparePassword(req.body.password, member.pass);
       if (validPassword) {
-        // Set token expiration to 24 hours for better security
-        let token = jwt.sign(
-          { id: member.id }, 
-          process.env.secret, 
-          { expiresIn: '24h' }
-        );
+        let token = jwt.sign({ id: member.id }, process.env.secret);
         res.send({ token: token, message: "success" });
       } else {
         res.statusCode = 401;
@@ -96,8 +91,7 @@ app.post("/member/register", async (req, res) => {
 
 app.get("/member/info", service.isLogin, async (req, res, next) => {
     try {
-      // Use jwt.verify() instead of jwt.decode() for security
-      const payLoad = jwt.verify(service.getToken(req), process.env.secret);
+      const payLoad = jwt.decode(service.getToken(req));
       const member = await MemberModel.findByPk(payLoad.id, {
         attributes: [
           "id",
@@ -114,13 +108,8 @@ app.get("/member/info", service.isLogin, async (req, res, next) => {
   
       res.send({ result: member, message: "success" });
     } catch (e) {
-      // Handle JWT verification errors specifically
-      if (e.name === 'JsonWebTokenError' || e.name === 'TokenExpiredError') {
-        res.status(401).send({ message: "Token ไม่ถูกต้องหรือหมดอายุ" });
-      } else {
-        res.statusCode = 500;
-        res.send({ message: e.message });
-      }
+      res.statusCode = 500;
+      return res.send({ message: e.message });
     }
   });
 

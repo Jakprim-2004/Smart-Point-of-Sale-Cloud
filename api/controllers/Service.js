@@ -82,7 +82,7 @@ const checkRouteAccess = (req, res, next) => {
 // ดึง ID ของสมาชิกจาก token
 const getMemberId = (req) => {
     const token = getToken(req);
-    const payload = jwt.verify(token, process.env.secret);
+    const payload = jwt.decode(token);
     return payload.id;
 }
 
@@ -90,7 +90,7 @@ const getMemberId = (req) => {
 // ดึง ID ของพนักงานจาก token
 const getEmployeeId = (req) => {
     const token = getToken(req);
-    const payload = jwt.verify(token, process.env.secret);
+    const payload = jwt.decode(token);
     return payload.employeeId;
 }
 
@@ -98,7 +98,7 @@ const getEmployeeId = (req) => {
 // ดึงระดับ (level) ของผู้ใช้จาก token
 const getUserLevel = (req) => {
     const token = getToken(req);
-    const payload = jwt.verify(token, process.env.secret);
+    const payload = jwt.decode(token);
     return payload.level;
 }
 
@@ -113,7 +113,7 @@ const getToken = (req) => {
 const getAdminId = (req) => {
     const jwt = require('jsonwebtoken');
     const token = req.headers.authorization?.replace('Bearer ', '');
-    const payLoad = jwt.verify(token, process.env.secret);
+    const payLoad = jwt.decode(token);
 
     // ตรวจสอบว่ามี payLoad และมี id
     return payLoad && payLoad.id ? payLoad.id : null;
