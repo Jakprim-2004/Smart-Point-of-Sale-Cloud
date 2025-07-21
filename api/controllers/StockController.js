@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+app.disable('x-powered-by');
 const Service = require('./Service');
 const StockModel = require('../models/StockModel');
 const { Sequelize } = require('sequelize'); // Add this import

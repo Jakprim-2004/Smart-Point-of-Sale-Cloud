@@ -1,4 +1,5 @@
 const express = require("express");
+app.disable('x-powered-by');
 const app = express();
 const ProductModel = require("../models/ProductModel");
 const Service = require("./Service");

@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+app.disable('x-powered-by');
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const service = require("./Service");
@@ -8,11 +9,7 @@ const BillSaleDetailModel = require("../models/BillSaleDetailModel");
 const CustomerModel = require("../models/CustomerModel"); 
 const PointTransactionModel = require('../models/PointTransactionModel'); 
 
-// ฟังก์ชันสำหรับดึงวันที่และเวลาปัจจุบันตามโซนเวลาไทย (ไม่ใช้แล้ว - ใช้ UTC แทน)
-// const getThaiDateTime = () => {
-//     const now = new Date();
-//     return new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
-// };
+
 
 // API สำหรับเปิดบิลขายใหม่
 app.get('/billSale/openBill', service.isLogin, async (req, res) => {

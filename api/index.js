@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+app.disable('x-powered-by');
 const bodyParser = require('body-parser');
 const events = require('events');
 require('dotenv').config();

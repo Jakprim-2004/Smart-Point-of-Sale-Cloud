@@ -1,4 +1,5 @@
 const express = require('express');
+app.disable('x-powered-by');
 const router = express.Router();
 const RewardModel = require('../models/RewardModel');
 const CustomerModel = require('../models/CustomerModel');

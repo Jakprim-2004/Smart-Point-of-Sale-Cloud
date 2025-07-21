@@ -1,10 +1,12 @@
 const express = require('express')
 const Service = require('./Service')
 const app = express()
+app.disable('x-powered-by');
+
+
 const ProductImageModel = require('../models/ProductImageModel');
 const { cloudinary, upload } = require('../Cloudinary');
 
-// สำหรับการอัพโหลดรูปภาพไปยัง Cloudinary
 
 app.post('/productImage/insert/', Service.isLogin, upload.single('productImage'), async (req, res) => {
     try {        

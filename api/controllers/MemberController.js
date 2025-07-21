@@ -1,4 +1,5 @@
 const express = require("express");
+app.disable('x-powered-by');
 const MemberModel = require("../models/MemberModel");
 const { Op } = require("sequelize");
 const app = express();
