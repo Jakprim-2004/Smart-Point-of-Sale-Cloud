@@ -2,10 +2,9 @@ const express = require('express');
 const router = express.Router();
 const RewardModel = require('../models/RewardModel');
 const CustomerModel = require('../models/CustomerModel');
-const PointTransactionModel = require('../models/PointTransactionModel'); // เพิ่มบรรทัดนี้
+const PointTransactionModel = require('../models/PointTransactionModel'); 
 const service = require('./Service');
-const fileUpload = require('express-fileupload');
-router.use(fileUpload());
+
 
 // ดึงรายการของรางวัลทั้งหมด
 router.get("/rewards", service.isLogin, async (req, res) => {
@@ -87,7 +86,6 @@ router.post("/rewards", service.isLogin, async (req, res) => {
     }
 });
 
-// แก้ไข endpoint upload-image
 
 // อัพเดทของรางวัล
 router.put("/rewards/:id", service.isLogin, async (req, res) => {

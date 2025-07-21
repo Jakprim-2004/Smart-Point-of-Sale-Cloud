@@ -5,10 +5,11 @@ require('dotenv').config();
 const sequelize = process.env.DATABASE_URL 
     ? new Sequelize(process.env.DATABASE_URL, {
         dialect: 'postgres',
+        logging: false, 
         dialectOptions: {
             ssl: {
                 require: true,
-                rejectUnauthorized: false
+                rejectUnauthorized: true 
             },
             // ใช้ timezone ไทย
             useUTC: false,

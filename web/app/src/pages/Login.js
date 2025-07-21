@@ -176,6 +176,18 @@ function Login() {
                                 เข้าสู่ระบบ
                             </button>
 
+                            {/* Demo Account Information */}
+                            <div className="alert alert-info mt-3">
+                                <h6 className="alert-heading mb-2">
+                                    <i className="fas fa-info-circle me-2"></i>
+                                    ข้อมูลทดสอบระบบ
+                                </h6>
+                                <div className="demo-info">
+                                    <strong>User:</strong> Demo<br/>
+                                    <strong>Password:</strong> 11223344kK*
+                                </div>
+                            </div>
+
 
                         </div>
                     </div>

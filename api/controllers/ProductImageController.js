@@ -27,8 +27,33 @@ app.post('/productImage/insert/', Service.isLogin, upload.single('productImage')
             publicId: req.file.filename
         });
     } catch (e) {
-        res.statusCode = 500;
-        res.send({message: e.message});
+        // จัดการข้อผิดพลาดจากการจำกัดขนาดไฟล์
+        if (e.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ 
+                message: 'ไฟล์มีขนาดใหญ่เกินไป (สูงสุด 10MB)',
+                error: 'FILE_TOO_LARGE'
+            });
+        } else if (e.code === 'LIMIT_FILE_COUNT') {
+            return res.status(400).json({ 
+                message: 'อัปโหลดได้เพียงไฟล์เดียวต่อครั้ง',
+                error: 'TOO_MANY_FILES'
+            });
+        } else if (e.message.includes('Only image files')) {
+            return res.status(400).json({ 
+                message: 'รองรับเฉพาะไฟล์รูปภาพเท่านั้น',
+                error: 'INVALID_FILE_TYPE'
+            });
+        } else if (e.message.includes('Invalid file extension')) {
+            return res.status(400).json({ 
+                message: 'นามสกุลไฟล์ไม่ถูกต้อง รองรับเฉพาะ JPG, PNG, GIF, WEBP',
+                error: 'INVALID_FILE_EXTENSION'
+            });
+        }
+        
+        res.status(500).json({
+            message: 'เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ',
+            error: e.message
+        });
     }
 })
 
