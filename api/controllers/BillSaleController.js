@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+app.disable('x-powered-by');
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const service = require("./Service");
@@ -8,20 +9,20 @@ const BillSaleDetailModel = require("../models/BillSaleDetailModel");
 const CustomerModel = require("../models/CustomerModel"); 
 const PointTransactionModel = require('../models/PointTransactionModel'); 
 
-// ฟังก์ชันสำหรับดึงวันที่และเวลาปัจจุบันตามโซนเวลาไทย
-const getThaiDateTime = () => {
-    const now = new Date();
-    return new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
-};
+
 
 // API สำหรับเปิดบิลขายใหม่
 app.get('/billSale/openBill', service.isLogin, async (req, res) => {
     try {
+        // สร้างเวลาไทยปัจจุบัน
+        const now = new Date();
+        const thaiTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // เพิ่ม 7 ชั่วโมง
+        
         // เตรียมข้อมูลสำหรับสร้างบิลใหม่
         const payload = {
             userId: service.getMemberId(req), // ดึงรหัสผู้ใช้จาก request
             status: 'open', // ตั้งสถานะบิลเป็นเปิด
-            createdAt: getThaiDateTime() // เก็บวันที่และเวลาตามโซนไทย
+            createdAt: thaiTime // ใช้เวลาไทยปัจจุบัน
         };
 
         // ตรวจสอบว่ามีบิลที่เปิดอยู่ของผู้ใช้หรือไม่
@@ -214,9 +215,11 @@ app.post('/billSale/updateQty', service.isLogin, async (req, res) => {
 app.post('/billSale/endSale', service.isLogin, async (req, res) => {
     try {
         const { method, amount, billSaleDetails, customerId, description } = req.body;
-        const currentTime = getThaiDateTime();
+        // สร้างเวลาไทยปัจจุบัน
+        const now = new Date();
+        const currentTime = new Date(now.getTime() + (7 * 60 * 60 * 1000)); // เพิ่ม 7 ชั่วโมง
         
-        console.log('Received customer ID:', customerId, 'Type:', typeof customerId);
+        
         
         // สร้าง update payload โดยไม่รวม customerId ก่อน
         const updatePayload = {
@@ -224,7 +227,7 @@ app.post('/billSale/endSale', service.isLogin, async (req, res) => {
             paymentMethod: method,
             payDate: currentTime,
             totalAmount: amount,
-            createdAt: currentTime,
+            // ไม่อัปเดต createdAt เพราะต้องเก็บเวลาที่สร้างบิลเดิม
             updatedAt: currentTime,
             description: description || ""
         };
@@ -238,9 +241,7 @@ app.post('/billSale/endSale', service.isLogin, async (req, res) => {
                     const customer = await CustomerModel.findByPk(customerIdInt);
                     if (customer) {
                         updatePayload.customerId = customerIdInt;
-                        console.log(`พบข้อมูลลูกค้า ID: ${customerIdInt}`);
                     } else {
-                        console.log(`ไม่พบข้อมูลลูกค้า ID: ${customerIdInt}`);
                     }
                 }
             } catch (err) {
@@ -360,7 +361,7 @@ app.get('/billSale/list', service.isLogin, async (req, res) => {
     try {
         // ดึงรายการบิลทั้งหมด
         const results = await BillSaleModel.findAll({
-            attributes: ['id', 'createdAt', 'paymentMethod', 'status', 'userId','totalAmount', 'description'],
+            attributes: ['id', 'payDate', 'paymentMethod', 'status', 'userId','totalAmount', 'description'],
             order: [['id', 'DESC']],
             where: {
                 status: 'pay',

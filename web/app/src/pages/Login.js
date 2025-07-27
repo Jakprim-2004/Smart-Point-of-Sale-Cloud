@@ -20,11 +20,11 @@ function Login() {
         try {
             let payload;
             let endpoint;
-            
+
             if (loginType === 'member') {
-                payload = { 
-                    phone: phone || '', 
-                    password: pass 
+                payload = {
+                    phone: phone || '',
+                    password: pass
                 };
                 endpoint = '/member/signin';
             } else {
@@ -46,7 +46,7 @@ function Login() {
             }
 
             const res = await axios.post(config.api_path + endpoint, payload);
-            
+
             if (res.data.message === 'success') {
                 Swal.fire({
                     title: 'Sign In',
@@ -59,7 +59,7 @@ function Login() {
 
                 localStorage.setItem(config.token_name, res.data.token);
                 localStorage.setItem('userType', loginType);
-                
+
                 // Store user level and redirect based on role
                 if (loginType === 'employee') {
                     localStorage.setItem('userLevel', res.data.userInfo.level);
@@ -73,8 +73,8 @@ function Login() {
             console.error(error);
             Swal.fire({
                 title: 'Sign In',
-                text: loginType === 'member' ? 
-                    'เบอร์โทร หรือรหัสผ่านไม่ถูกต้อง' : 
+                text: loginType === 'member' ?
+                    'เบอร์โทร หรือรหัสผ่านไม่ถูกต้อง' :
                     'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
                 icon: 'error',
                 timer: 2000
@@ -98,11 +98,12 @@ function Login() {
                         </div>
                     </div>
                     <div className="col-md-6 login-form-container">
+
                         <h3 className="text-center mb-4">เข้าสู่ระบบ</h3>
-                        
+
                         <nav className="nav nav-pills nav-justified mb-4">
-                           
-                           
+
+
                         </nav>
 
                         <div className="login-form p-3">
@@ -115,9 +116,9 @@ function Login() {
                                         <span className="input-group-text">
                                             <i className="fas fa-user"></i>
                                         </span>
-                                        <input 
-                                            type="text" 
-                                            className="form-control" 
+                                        <input
+                                            type="text"
+                                            className="form-control"
                                             placeholder={loginType === 'member' ? "กรอกเบอร์โทรศัพท์" : "กรอกชื่อผู้ใช้"}
                                             value={loginType === 'member' ? (phone || email) : username}
                                             onChange={(e) => {
@@ -141,9 +142,9 @@ function Login() {
                                         <span className="input-group-text">
                                             <i className="fas fa-user"></i>
                                         </span>
-                                        <input 
-                                            type="text" 
-                                            className="form-control" 
+                                        <input
+                                            type="text"
+                                            className="form-control"
                                             placeholder="กรอกชื่อผู้ใช้"
                                             value={username}
                                             onChange={(e) => setUsername(e.target.value)}
@@ -158,8 +159,8 @@ function Login() {
                                     <span className="input-group-text">
                                         <i className="fas fa-lock"></i>
                                     </span>
-                                    <input 
-                                        type="password" 
+                                    <input
+                                        type="password"
                                         className="form-control"
                                         placeholder="กรอกรหัสผ่าน"
                                         value={pass}
@@ -168,14 +169,26 @@ function Login() {
                                 </div>
                             </div>
 
-                            <button 
-                                onClick={handleSignIn} 
+                            <button
+                                onClick={handleSignIn}
                                 className="btn btn-primary w-100 py-2 mb-3">
                                 <i className="fas fa-sign-in-alt me-2"></i>
                                 เข้าสู่ระบบ
                             </button>
 
-                           
+                            {/* Demo Account Information */}
+                            <div className="alert alert-info mt-3">
+                                <h6 className="alert-heading mb-2">
+                                    <i className="fas fa-info-circle me-2"></i>
+                                    ข้อมูลทดสอบระบบ
+                                </h6>
+                                <div className="demo-info">
+                                    <strong>User:</strong> Demo<br/>
+                                    <strong>Password:</strong> 11223344kK*
+                                </div>
+                            </div>
+
+
                         </div>
                     </div>
                 </div>

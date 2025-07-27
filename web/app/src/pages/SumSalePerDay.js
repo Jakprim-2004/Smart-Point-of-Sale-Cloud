@@ -217,7 +217,23 @@ function SumSalePerDay() {
                             {currentBillSale.length > 0 ? currentBillSale.map(item =>
                                 <tr key={item.id}>
                                     <td className="text-end fw-bold">{item.id}</td>
-                                    <td>{new Date(item.createdAt).toLocaleDateString('th-TH')}</td>
+                                    <td>
+                                        <div>{new Date(item.createdAt).toLocaleDateString('th-TH', {
+                                            timeZone: 'Asia/Bangkok',
+                                            year: 'numeric',
+                                            month: '2-digit',
+                                            day: '2-digit'
+                                        })}</div>
+                                        <small className="text-muted">
+                                            {new Date(item.createdAt).toLocaleTimeString('th-TH', {
+                                                timeZone: 'Asia/Bangkok',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit',
+                                                hour12: false
+                                            })}
+                                        </small>
+                                    </td>
                                     <td className="text-center">
                                         <button
                                             onClick={() => {

@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
     res.json({ 
       message: 'Smart POS API is running on Vercel',
       status: 'healthy',
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toLocaleString(),
       env: {
         nodeEnv: process.env.NODE_ENV,
         hasDbUrl: !!process.env.DATABASE_URL,

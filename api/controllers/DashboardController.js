@@ -1,11 +1,14 @@
-const express = require('express');
+require('dotenv').config();
+
+const express = require("express");
+const app = express();
+app.disable('x-powered-by');
 const router = express.Router();
 const StockModel = require('../models/StockModel');
 const BillSaleDetailModel = require('../models/BillSaleDetailModel');
 const ProductModel = require('../models/ProductModel');
 const BillSaleModel = require('../models/BillSaleModel');
 const sequelize = require('sequelize');
-require("dotenv").config();
 const service = require("./Service");
 
 // Import associations to ensure they are loaded
@@ -223,7 +226,7 @@ router.get('/reportTopSellingProducts', async (req, res) => {
         attributes: [],
         required: false
       }],
-      group: ['productId', 'product.name'],
+      group: ['productId', 'product.id', 'product.name'],
       where: { 
         userId: userId,
         billSaleId: {
@@ -256,8 +259,8 @@ router.get('/reportTopSellingProducts', async (req, res) => {
       };
     });
 
-    // Sort by totalAmount
-    results.sort((a, b) => b.totalAmount - a.totalAmount);
+    // Sort by totalQty (quantity sold) instead of totalAmount
+    results.sort((a, b) => b.totalQty - a.totalQty);
     
     // Take top 5 or use default if empty
     const topResults = results.length > 0 ? results.slice(0, 5) : [{
@@ -297,39 +300,41 @@ router.get('/reportTopSellingCategories', async (req, res) => {
         [sequelize.col('product.category'), 'category'],
         [sequelize.fn('SUM', sequelize.col('qty')), 'totalQty'],
         [sequelize.fn('SUM', 
-          sequelize.literal('qty * price') // ใช้ price จาก billSaleDetail แทน totalprice
+          sequelize.literal('qty * "billSaleDetail"."price"') // ใช้ price จาก billSaleDetail แทน totalprice
         ), 'totalAmount']
       ],
-      group: ['product.category'],
-      having: sequelize.literal('SUM(qty) > 0'),
-      order: [[sequelize.fn('SUM', sequelize.literal('qty * price')), 'DESC']],
-      limit: 5,
       include: [{ 
         model: ProductModel, 
         as: 'product',
-        attributes: [],
+        attributes: ['category'], // เพิ่ม attributes เพื่อให้สามารถเข้าถึง category ได้
         required: true // เพิ่ม required เพื่อทำ INNER JOIN
       },
       {
         model: BillSaleModel,
         as: 'billSale',
         attributes: [],
-        where: { status: 'pay' },
+        where: { 
+          status: 'pay',
+          userId: userId // ย้าย userId condition มาที่ billSale
+        },
         required: true // เพิ่ม required เพื่อทำ INNER JOIN
       }],
       where: { 
-        userId: userId,
         createdAt: {
           [sequelize.Op.gte]: today,
           [sequelize.Op.lt]: tomorrow
         }
-      } 
+      },
+      group: ['product.id', 'product.category'],
+      having: sequelize.literal('SUM(qty) > 0'),
+      order: [[sequelize.fn('SUM', sequelize.col('qty')), 'DESC']], // เรียงตามจำนวนชิ้นที่ขายได้
+      limit: 5
     });
 
     const results = topSellingCategories.map(category => {
       const data = category.get({ plain: true });
       return {
-        ...data,
+        category: data.category || 'ไม่ระบุหมวดหมู่',
         totalAmount: parseFloat(data.totalAmount) || 0,
         totalQty: parseInt(data.totalQty) || 0
       };
@@ -352,6 +357,64 @@ router.get('/reportTopSellingCategories', async (req, res) => {
     });
   } catch (error) {
     console.error('Error in reportTopSellingCategories:', error);
+    res.status(500).send({ message: error.message });
+  }
+});
+
+// Alternative raw SQL approach for reportTopSellingCategories
+router.get('/reportTopSellingCategoriesRaw', async (req, res) => {
+  try {
+    const userId = service.getMemberId(req); 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const { sequelize } = require('../models');
+    
+    const [results] = await sequelize.query(`
+      SELECT 
+        p.category,
+        SUM(bsd.qty) as totalQty,
+        SUM(bsd.qty * bsd.price) as totalAmount
+      FROM billSaleDetails bsd
+      INNER JOIN products p ON bsd.productId = p.id
+      INNER JOIN billSales bs ON bsd.billSaleId = bs.id
+      WHERE bs.userId = :userId 
+        AND bs.status = 'pay'
+        AND bsd.createdAt >= :startDate 
+        AND bsd.createdAt < :endDate
+      GROUP BY p.category
+      HAVING SUM(bsd.qty) > 0
+      ORDER BY totalQty DESC
+      LIMIT 5
+    `, {
+      replacements: {
+        userId: userId,
+        startDate: today,
+        endDate: tomorrow
+      }
+    });
+
+    // คำนวณ total amount รวมทั้งหมด
+    const totalAmount = results.reduce((sum, category) => 
+      sum + parseFloat(category.totalAmount || 0), 0);
+
+    // เพิ่มเปอร์เซ็นต์ให้แต่ละ category
+    const categoriesWithPercentage = results.map(category => ({
+      category: category.category || 'ไม่ระบุหมวดหมู่',
+      totalAmount: parseFloat(category.totalAmount) || 0,
+      totalQty: parseInt(category.totalQty) || 0,
+      percentage: totalAmount > 0 ? 
+        ((parseFloat(category.totalAmount || 0) / totalAmount) * 100).toFixed(2) : 0
+    }));
+
+    res.send({ 
+      message: 'success', 
+      results: categoriesWithPercentage 
+    });
+  } catch (error) {
+    console.error('Error in reportTopSellingCategoriesRaw:', error);
     res.status(500).send({ message: error.message });
   }
 });
@@ -539,7 +602,7 @@ router.get('/paymentMethodStats', async (req, res) => {
       message: 'success', 
       results: paymentStats.map(stat => ({
         ...stat,
-        paymentMethod: stat.paymentMethod || 'ไม่ระบุ', // Set default for null payment methods
+        paymentMethod: stat.paymentMethod || 'ไม่ระบุ', 
         total: parseFloat(stat.total) || 0,
         label: '' // Add empty label for chart display
       }))
@@ -555,12 +618,11 @@ router.post('/reportSalesByDateRange', async (req, res) => {
     const userId = service.getMemberId(req);
     const { dateRange, customStartDate, customEndDate } = req.body;
     
-    let startDate = new Date();
-    let endDate = new Date();
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(23, 59, 59, 999);
-
-    // Handle different date ranges with validation
+    
+    let startDate, endDate;
+    const now = new Date();
+    
+    // Handle different date ranges with proper timezone handling
     if (dateRange === 'custom') {
       if (!customStartDate || !customEndDate) {
         return res.send({
@@ -568,43 +630,66 @@ router.post('/reportSalesByDateRange', async (req, res) => {
           results: []
         });
       }
-      startDate = new Date(customStartDate);
-      endDate = new Date(customEndDate);
+      
+      // Parse dates เป็นเวลาไทยโดยตรง (เนื่องจากข้อมูลใน DB เป็นเวลาไทยแล้ว)
+      startDate = new Date(customStartDate + 'T00:00:00.000');
+      endDate = new Date(customEndDate + 'T23:59:59.999');
+      
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
         return res.send({
           message: 'success',
           results: []
         });
       }
-      endDate.setHours(23, 59, 59, 999);
     } else {
+      // Set base dates for today (Thai time)
+      const today = new Date();
+      const thaiToday = new Date(today.getTime() + (7 * 60 * 60 * 1000)); // เวลาไทยปัจจุบัน
+      thaiToday.setHours(0, 0, 0, 0);
+      
       switch (dateRange) {
-        case 'yesterday':
-          startDate.setDate(startDate.getDate() - 1);
-          endDate.setDate(endDate.getDate() - 1);
-          break;
-        case 'last7days':
-          startDate.setDate(startDate.getDate() - 6);
-          break;
-        case 'last30days':
-          startDate.setDate(startDate.getDate() - 29);
-          break;
-        case 'thisMonth':
-          startDate.setDate(1);
-          break;
-        case 'lastMonth':
-          startDate.setMonth(startDate.getMonth() - 1);
-          startDate.setDate(1);
-          endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
-          break;
-        case 'custom':
-          startDate = new Date(customStartDate);
-          endDate = new Date(customEndDate);
+        case 'today':
+          startDate = new Date(thaiToday);
+          endDate = new Date(thaiToday);
           endDate.setHours(23, 59, 59, 999);
           break;
+        case 'yesterday':
+          startDate = new Date(thaiToday);
+          startDate.setDate(startDate.getDate() - 1);
+          endDate = new Date(startDate);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case 'last7days':
+          startDate = new Date(thaiToday);
+          startDate.setDate(startDate.getDate() - 6);
+          endDate = new Date(thaiToday);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case 'last30days':
+        case 'thisMonth':
+          if (dateRange === 'last30days') {
+            startDate = new Date(thaiToday);
+            startDate.setDate(startDate.getDate() - 29);
+          } else {
+            startDate = new Date(thaiToday.getFullYear(), thaiToday.getMonth(), 1);
+          }
+          endDate = new Date(thaiToday);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case 'lastMonth':
+          startDate = new Date(thaiToday.getFullYear(), thaiToday.getMonth() - 1, 1);
+          endDate = new Date(thaiToday.getFullYear(), thaiToday.getMonth(), 0, 23, 59, 59, 999);
+          break;
+        default:
+          // Default to today
+          startDate = new Date(thaiToday);
+          endDate = new Date(thaiToday);
+          endDate.setHours(23, 59, 59, 999);
       }
     }
-
+    
+   
+    
     const results = await BillSaleDetailModel.findAll({
       attributes: [
         'productId',
@@ -660,13 +745,26 @@ router.post('/productDetails', async (req, res) => {
     const userId = service.getMemberId(req);
     const { startDate, endDate, dateRange } = req.body;
     
-    // Create Date objects for UTC+7 (Bangkok timezone)
-    const start = new Date(startDate);
-    const end = new Date(endDate);
     
-    // Adjust times
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
+    // Handle date parsing with proper timezone
+    let start, end;
+    
+    if (startDate && endDate) {
+      // Parse dates เป็นเวลาไทยโดยตรง
+      start = new Date(startDate + 'T00:00:00.000');
+      end = new Date(endDate + 'T23:59:59.999');
+    } else {
+      // Default to today if no dates provided (Thai time)
+      const today = new Date();
+      const thaiToday = new Date(today.getTime() + (7 * 60 * 60 * 1000)); // เวลาไทยปัจจุบัน
+      thaiToday.setHours(0, 0, 0, 0);
+      
+      start = new Date(thaiToday);
+      end = new Date(thaiToday);
+      end.setHours(23, 59, 59, 999);
+    }
+    
+   
 
     // เรียกข้อมูลแบบรายวัน โดยอย่าเพิ่ม cost/price ในการ GROUP BY
     const results = await BillSaleDetailModel.findAll({
@@ -798,11 +896,28 @@ router.post('/reportTopSalesDays', async (req, res) => {
     const userId = service.getMemberId(req);
     const { startDate, endDate } = req.body;
     
-    const start = new Date(startDate);
-    const end = new Date(endDate);
     
-    start.setHours(7, 0, 0, 0);
-    end.setHours(30, 59, 59, 999);
+    // Handle date parsing with proper timezone
+    let start, end;
+    
+    if (startDate && endDate) {
+      // Parse dates เป็นเวลาไทยโดยตรง
+      start = new Date(startDate + 'T00:00:00.000');
+      end = new Date(endDate + 'T23:59:59.999');
+    } else {
+      // Default to last 30 days if no dates provided (Thai time)
+      const today = new Date();
+      const thaiToday = new Date(today.getTime() + (7 * 60 * 60 * 1000)); // เวลาไทยปัจจุบัน
+      thaiToday.setHours(23, 59, 59, 999);
+      end = new Date(thaiToday);
+      
+      const thai30DaysAgo = new Date(thaiToday);
+      thai30DaysAgo.setDate(thai30DaysAgo.getDate() - 29);
+      thai30DaysAgo.setHours(0, 0, 0, 0);
+      start = new Date(thai30DaysAgo);
+    }
+    
+ 
 
     const results = await BillSaleDetailModel.findAll({
       attributes: [

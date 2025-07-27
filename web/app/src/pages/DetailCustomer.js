@@ -148,7 +148,7 @@ function DetailCustomer() {
                                 <div className="mb-3">
                                     <p><strong>วันที่:</strong> {new Date(selectedBill.createdAt).toLocaleString()}</p>
                                     <p><strong>ชำระผ่าน:</strong> {getPaymentMethodThai(selectedBill.paymentMethod)}</p>
-                                    <p><strong>ยอดรวมภาษี 7%:</strong> {selectedBill.totalAmount?.toLocaleString()} บาท</p>
+                                    <p><strong>ยอดรวม:</strong> {selectedBill.totalAmount?.toLocaleString()} บาท</p>
                                 </div>
                                 <table className="table">
                                     <thead>

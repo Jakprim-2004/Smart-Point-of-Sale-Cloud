@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -457,15 +458,34 @@ function Dashboard() {
         return;
       }
 
+      // ปรับการส่งวันที่ให้เป็น local date โดยไม่มี timezone
       const payload = {
         dateRange,
-        customStartDate: start ? start.toISOString() : null,
-        customEndDate: end ? end.toISOString() : null
+        customStartDate: start ? start.toLocaleDateString('en-CA') : null, // YYYY-MM-DD format
+        customEndDate: end ? end.toLocaleDateString('en-CA') : null
       };
+
+      console.log('Frontend sending payload:', payload);
+      console.log('Date range details:', {
+        dateRange,
+        startDate: start ? {
+          original: start,
+          formatted: start.toLocaleDateString('en-CA'),
+          isoString: start.toISOString(),
+          localString: start.toLocaleString('th-TH')
+        } : null,
+        endDate: end ? {
+          original: end,
+          formatted: end.toLocaleDateString('en-CA'),
+          isoString: end.toISOString(),
+          localString: end.toLocaleString('th-TH')
+        } : null
+      });
 
       const res = await axios.post(url, payload, config.headers());
       if (res.data.message === "success") {
         setSalesData(res.data.results);
+        console.log('Sales data received:', res.data.results);
       }
     } catch (e) {
       Swal.fire({
@@ -483,19 +503,34 @@ function Dashboard() {
       const [start, end] = productDateRange;
       if (!start || !end) return;
 
-      const startDate = new Date(start);
-      const endDate = new Date(end);
+      // ใช้ local date format แทน ISO
+      const payload = {
+        startDate: start.toLocaleDateString('en-CA'), // YYYY-MM-DD format
+        endDate: end.toLocaleDateString('en-CA'),
+        dateRange: 'custom'
+      };
 
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setHours(23, 59, 59, 999);
+      console.log('Frontend sending product details payload:', payload);
+      console.log('Product date range details:', {
+        startDate: {
+          original: start,
+          formatted: start.toLocaleDateString('en-CA'),
+          isoString: start.toISOString(),
+          localString: start.toLocaleString('th-TH')
+        },
+        endDate: {
+          original: end,
+          formatted: end.toLocaleDateString('en-CA'),
+          isoString: end.toISOString(),
+          localString: end.toLocaleString('th-TH')
+        }
+      });
 
-      const res = await axios.post(url, {
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
-      }, config.headers());
+      const res = await axios.post(url, payload, config.headers());
 
       if (res.data.message === "success") {
         setProductDetails(res.data.results);
+        console.log('Product details received:', res.data.results);
       }
     } catch (e) {
       console.error('Error fetching product details:', e);

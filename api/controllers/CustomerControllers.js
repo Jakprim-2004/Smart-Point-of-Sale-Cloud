@@ -1,8 +1,11 @@
-const express = require('express');
+require('dotenv').config();
+
+const express = require("express");
+const app = express();
+app.disable('x-powered-by');
 const router = express.Router();
 const sequelize = require('sequelize');
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
 const service = require("./Service");
 const CustomerModel = require("../models/CustomerModel");
 const BillSaleModel = require("../models/BillSaleModel");

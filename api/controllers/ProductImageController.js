@@ -1,10 +1,11 @@
 const express = require('express')
 const Service = require('./Service')
 const app = express()
+
+
 const ProductImageModel = require('../models/ProductImageModel');
 const { cloudinary, upload } = require('../Cloudinary');
 
-// สำหรับการอัพโหลดรูปภาพไปยัง Cloudinary
 
 app.post('/productImage/insert/', Service.isLogin, upload.single('productImage'), async (req, res) => {
     try {        
@@ -41,14 +42,8 @@ app.get('/productImage/list/:productId/', Service.isLogin, async (req, res) => {
             order: [['id', 'DESC']]
         })
         
-        console.log(`Fetching images for product ${req.params.productId}:`, results.length);
         results.forEach(img => {
-            console.log('Image data:', {
-                id: img.id,
-                imageName: img.imageName,
-                imageUrl: img.imageUrl,
-                isMain: img.isMain
-            });
+           
         });
         
         res.send({message: 'success', results: results});
@@ -77,10 +72,8 @@ app.delete('/productImage/delete/:id/', Service.isLogin, async (req, res) => {
         // ลบรูปภาพจาก Cloudinary
         try {
             await cloudinary.uploader.destroy(imageName);
-            console.log('Image deleted from Cloudinary:', imageName);
         } catch (cloudinaryError) {
-            console.error('Error deleting from Cloudinary:', cloudinaryError);
-            // ไม่ throw error เพราะข้อมูลในฐานข้อมูลถูกลบแล้ว
+            return res.status(500).json({ message: 'ไม่สามารถลบรูปภาพจาก Cloudinary ได้' });
         }
 
         res.send({message: 'success'});
@@ -122,16 +115,8 @@ app.get('/productImage/debug/all/', Service.isLogin, async (req, res) => {
             limit: 10
         })
         
-        console.log('All images in database (last 10):');
         results.forEach(img => {
-            console.log('Image:', {
-                id: img.id,
-                productId: img.productId,
-                imageName: img.imageName,
-                imageUrl: img.imageUrl,
-                isMain: img.isMain,
-                hasImageUrl: !!img.imageUrl
-            });
+           
         });
         
         res.send({

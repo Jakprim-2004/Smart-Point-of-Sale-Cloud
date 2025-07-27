@@ -160,6 +160,16 @@ function Product() {
       return;
     }
 
+    // ตรวจสอบราคาขายต้องไม่น้อยกว่าราคาทุน
+    if (parseFloat(product.price) < parseFloat(product.cost)) {
+      Swal.fire({
+        title: "ราคาไม่ถูกต้อง",
+        text: "ราคาจำหน่ายต้องไม่น้อยกว่าราคาทุน",
+        icon: "warning",
+      });
+      return;
+    }
+
     if (!product.category) {
       Swal.fire({
         title: "กรุณากรอกข้อมูล",
@@ -709,7 +719,7 @@ function Product() {
           </div>
         </div>
 
-        {/* เพิ่ม CSS แบบกำหนดเอง */}
+        
         <style jsx>{`
           .hover-scale:hover {
             transform: scale(1.02);
@@ -905,14 +915,31 @@ function Product() {
                 </label>
                 <input
                   value={product.price || ""}
-                  onChange={(e) =>
-                    setProduct({ ...product, price: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const newPrice = e.target.value;
+                    setProduct({ ...product, price: newPrice });
+                    
+                    // ตรวจสอบ real-time ถ้ามีราคาทุนและราคาขายแล้ว
+                    if (product.cost && newPrice && parseFloat(newPrice) < parseFloat(product.cost)) {
+                      e.target.style.borderColor = '#dc3545';
+                      e.target.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
+                    } else {
+                      e.target.style.borderColor = '#ced4da';
+                      e.target.style.boxShadow = 'none';
+                    }
+                  }}
                   type="number"
                   className="form-control shadow-sm"
                   required
                   min="0"
+                  step="0.01"
                 />
+                {product.cost && product.price && parseFloat(product.price) < parseFloat(product.cost) && (
+                  <small className="text-danger">
+                    <i className="fa fa-exclamation-triangle me-1"></i>
+                    ราคาจำหน่ายต้องไม่น้อยกว่าราคาทุน ({parseFloat(product.cost).toLocaleString('th-TH')} บาท)
+                  </small>
+                )}
               </div>
               
               <div className="form-group col-md-12">

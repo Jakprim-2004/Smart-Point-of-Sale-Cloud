@@ -1,5 +1,8 @@
+require('dotenv').config();
+
 const express = require("express");
 const app = express();
+app.disable('x-powered-by');
 const ProductModel = require("../models/ProductModel");
 const Service = require("./Service");
 const { Op } = require('sequelize'); 

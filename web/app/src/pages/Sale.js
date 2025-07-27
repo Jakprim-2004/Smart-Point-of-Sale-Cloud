@@ -34,6 +34,9 @@ function Sale() {
   const [billAmount, setBillAmount] = useState(0);
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerSearchText, setCustomerSearchText] = useState('');
+  const [filteredCustomers, setFilteredCustomers] = useState([]);
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const [showQtyModal, setShowQtyModal] = useState(false);
   const [showHeldBillsModal, setShowHeldBillsModal] = useState(false);
   const [showEndSaleModal, setShowEndSaleModal] = useState(false);
@@ -50,7 +53,7 @@ function Sale() {
     openBill();
     fetchBillSaleDetail();
     loadCustomers();
-    
+
     // โหลดรายการบิลที่พักไว้จาก localStorage
     const savedHeldBills = localStorage.getItem('heldBills');
     if (savedHeldBills) {
@@ -214,11 +217,11 @@ function Sale() {
         icon: "success",
         timer: 1000,
       });
-      
+
       const updatedHeldBills = [...heldBills, bill];
       setHeldBills(updatedHeldBills);
       localStorage.setItem("heldBills", JSON.stringify(updatedHeldBills));
-      
+
       setCurrentBill({});
       setTotalPrice(0);
       setInputMoney(0);
@@ -249,101 +252,101 @@ function Sale() {
   // จบการขายและบันทึกข้อมูลการชำระเงิน
   const handleEndSale = () => {
     if (!currentBill.billSaleDetails || currentBill.billSaleDetails.length === 0) {
-        Swal.fire({
-            title: "ไม่สามารถจบการขายได้",
-            text: "ไม่มีสินค้าในตะกร้า",
-            icon: "warning",
-        });
-        return;
+      Swal.fire({
+        title: "ไม่สามารถจบการขายได้",
+        text: "ไม่มีสินค้าในตะกร้า",
+        icon: "warning",
+      });
+      return;
     }
 
     Swal.fire({
-        title: "จบการขาย",
-        text: "ยืนยันจบการขาย",
-        icon: "question",
-        showCancelButton: true,
-        showConfirmButton: true,
+      title: "จบการขาย",
+      text: "ยืนยันจบการขาย",
+      icon: "question",
+      showCancelButton: true,
+      showConfirmButton: true,
     }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
-                const priceAfterDiscount = totalPrice - discountFromPoints;
+      if (result.isConfirmed) {
+        try {
+          const priceAfterDiscount = totalPrice - discountFromPoints;
 
-                // สร้างข้อความอธิบายการใช้แต้ม
-                let description = '';
-                if (pointsToRedeem > 0) {
-                    description = `ใช้แต้มสะสม ${pointsToRedeem} แต้ม เป็นส่วนลด ${discountFromPoints} บาท`;
-                }
+          // สร้างข้อความอธิบายการใช้แต้ม
+          let description = '';
+          if (pointsToRedeem > 0) {
+            description = `ใช้แต้มสะสม ${pointsToRedeem} แต้ม เป็นส่วนลด ${discountFromPoints} บาท`;
+          }
 
-                // สร้างข้อมูลการใช้แต้ม (ถ้ามี)
-                const pointTransaction = pointsToRedeem > 0 ? {
-                    customerId: selectedCustomer.id,
-                    points: pointsToRedeem,
-                    transactionType: 'DISCOUNT',
-                    description: `ใช้แต้มส่วนลด ${pointsToRedeem} แต้ม สำหรับบิลเลขที่ #${currentBill.id} (ส่วนลด ${discountFromPoints} บาท)`
-                } : null;
+          // สร้างข้อมูลการใช้แต้ม (ถ้ามี)
+          const pointTransaction = pointsToRedeem > 0 ? {
+            customerId: selectedCustomer.id,
+            points: pointsToRedeem,
+            transactionType: 'DISCOUNT',
+            description: `ใช้แต้มส่วนลด ${pointsToRedeem} แต้ม สำหรับบิลเลขที่ #${currentBill.id} (ส่วนลด ${discountFromPoints} บาท)`
+          } : null;
 
-                const paymentData = {
-                    method: paymentMethod,
-                    amount: priceAfterDiscount,
-                    billSaleDetails: currentBill.billSaleDetails,
-                    customerId: selectedCustomer?.id || null,
-                    pointTransaction: pointTransaction, 
-                    discountFromPoints: discountFromPoints, 
-                    description: description 
-                };
+          const paymentData = {
+            method: paymentMethod,
+            amount: priceAfterDiscount,
+            billSaleDetails: currentBill.billSaleDetails,
+            customerId: selectedCustomer?.id || null,
+            pointTransaction: pointTransaction,
+            discountFromPoints: discountFromPoints,
+            description: description
+          };
 
-                const res = await axios.post(
-                    config.api_path + "/billSale/endSale",
-                    paymentData,
-                    config.headers()
-                );
+          const res = await axios.post(
+            config.api_path + "/billSale/endSale",
+            paymentData,
+            config.headers()
+          );
 
-                if (res.data.message === "success") {
-                    Swal.fire({
-                        title: "จบการขาย",
-                        text: "จบการขายสำเร็จแล้ว",
-                        icon: "success",
-                        timer: 1000,
-                    });
+          if (res.data.message === "success") {
+            Swal.fire({
+              title: "จบการขาย",
+              text: "จบการขายสำเร็จแล้ว",
+              icon: "success",
+              timer: 1000,
+            });
 
-                    // รีเซ็ตค่าต่างๆ
-                    setCurrentBill({});
-                    setTotalPrice(0);
-                    setInputMoney(0);
-                    setMemberInfo({});
-                    setLastBill({});
-                    setSumTotal(0);
-                    setSelectedCustomer(null);
+            // รีเซ็ตค่าต่างๆ
+            setCurrentBill({});
+            setTotalPrice(0);
+            setInputMoney(0);
+            setMemberInfo({});
+            setLastBill({});
+            setSumTotal(0);
+            setSelectedCustomer(null);
 
-                    // เรียก API เพื่อรีเฟรชข้อมูล
-                    await Promise.all([
-                        openBill(),
-                        fetchBillSaleDetail(),
-                        fetchData()
-                    ]);
+            // เรียก API เพื่อรีเฟรชข้อมูล
+            await Promise.all([
+              openBill(),
+              fetchBillSaleDetail(),
+              fetchData()
+            ]);
 
-                    // ปิด Modal
-                    const modalEndSale = document.getElementById('modalEndSale');
-                    if (modalEndSale) {
-                        const modalBackdrop = document.querySelector('.modal-backdrop');
-                        if (modalBackdrop) {
-                            modalBackdrop.parentNode.removeChild(modalBackdrop);
-                        }
-                        modalEndSale.style.display = 'none';
-                        document.body.classList.remove('modal-open');
-                    }
-                }
-            } catch (error) {
-                console.error('End sale error:', error);
-                Swal.fire({
-                    title: "เกิดข้อผิดพลาด",
-                    text: error.response?.data?.error || error.message,
-                    icon: "error",
-                });
+            // ปิด Modal
+            const modalEndSale = document.getElementById('modalEndSale');
+            if (modalEndSale) {
+              const modalBackdrop = document.querySelector('.modal-backdrop');
+              if (modalBackdrop) {
+                modalBackdrop.parentNode.removeChild(modalBackdrop);
+              }
+              modalEndSale.style.display = 'none';
+              document.body.classList.remove('modal-open');
             }
+          }
+        } catch (error) {
+          console.error('End sale error:', error);
+          Swal.fire({
+            title: "เกิดข้อผิดพลาด",
+            text: error.response?.data?.error || error.message,
+            icon: "error",
+          });
         }
+      }
     });
-};
+  };
 
   // พิมพ์บิลการขายล่าสุด
   const handlePrint = async () => {
@@ -510,7 +513,7 @@ function Sale() {
   const loadCustomers = async () => {
     try {
       const response = await axios.get(
-        config.api_path + "/customers", 
+        config.api_path + "/customers",
         config.headers()
       );
       if (response.data.result) {
@@ -520,11 +523,45 @@ function Sale() {
           id: Number(customer.id)
         }));
         setCustomers(formattedCustomers);
-        console.log("Loaded customers:", formattedCustomers);
       }
     } catch (error) {
       console.error("Error loading customers:", error);
     }
+  };
+
+  // ฟังก์ชันค้นหาลูกค้า
+  const searchCustomers = (searchText) => {
+    if (!searchText || searchText.length < 1) {
+      setFilteredCustomers([]);
+      return;
+    }
+
+    const filtered = customers.filter(customer =>
+      customer.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      customer.phone.includes(searchText)
+    );
+    setFilteredCustomers(filtered.slice(0, 10)); // แสดงเฉพาะ 10 รายการแรก
+  };
+
+  // ฟังก์ชันเลือกลูกค้า
+  const selectCustomer = (customer) => {
+    setSelectedCustomer(customer);
+    setCustomerSearchText(customer.name + ' - ' + customer.phone);
+    setShowCustomerDropdown(false);
+    setFilteredCustomers([]);
+    // รีเซ็ตค่าแต้มที่ใช้เมื่อเปลี่ยนลูกค้า
+    setPointsToRedeem(0);
+    setDiscountFromPoints(0);
+  };
+
+  // ฟังก์ชันล้างการเลือกลูกค้า
+  const clearCustomerSelection = () => {
+    setSelectedCustomer(null);
+    setCustomerSearchText('');
+    setShowCustomerDropdown(false);
+    setFilteredCustomers([]);
+    setPointsToRedeem(0);
+    setDiscountFromPoints(0);
   };
 
   // คำนวณส่วนลดจากแต้มสะสมของลูกค้า
@@ -532,9 +569,9 @@ function Sale() {
     const maxPoints = selectedCustomer ? selectedCustomer.points : 0;
     const maxPointsByPrice = Math.floor(totalPrice / 10); // จำนวนแต้มสูงสุดที่ใช้ได้ตามราคาสินค้า
     const maxAllowedPoints = Math.min(maxPoints, maxPointsByPrice);
-    
+
     const validPoints = Math.min(Math.max(0, points), maxAllowedPoints);
-    
+
     if (points > maxAllowedPoints) {
       Swal.fire({
         title: "ไม่สามารถใช้แต้มได้",
@@ -542,7 +579,7 @@ function Sale() {
         icon: "warning"
       });
     }
-    
+
     setPointsToRedeem(validPoints);
     setDiscountFromPoints(validPoints * 10);
   };
@@ -581,7 +618,7 @@ function Sale() {
             icon: "success",
             timer: 1000
           });
-          
+
           // รีเฟรชข้อมูล
           fetchBillSaleDetail();
           fetchData();
@@ -611,7 +648,7 @@ function Sale() {
                 ขายสินค้า
               </h5>
               <div className="button-group">
-              
+
                 <button
                   onClick={handleClearCart}
                   className="btn btn-danger me-2"
@@ -628,7 +665,7 @@ function Sale() {
                 >
                   <i className="fa fa-shopping-basket me-2"></i>พักบิล
                 </button>
-                
+
                 {/** ปุ่มสำหรับดูบิลที่พักไว้ */}
                 <button
                   onClick={() => setShowHeldBillsModal(true)}
@@ -648,8 +685,8 @@ function Sale() {
                   <i className="fa fa-check me-2"></i>จบการขาย
                 </button>
 
-                
-                
+
+
 
                 {/** ปุ่มสำหรับพิมพ์บิลล่าสุด */}
                 <button
@@ -688,8 +725,8 @@ function Sale() {
                         >
                           <div className="position-relative">
                             <img
-                              src={item.productImages && item.productImages.length > 0 && item.productImages[0].imageUrl 
-                                ? item.productImages[0].imageUrl 
+                              src={item.productImages && item.productImages.length > 0 && item.productImages[0].imageUrl
+                                ? item.productImages[0].imageUrl
                                 : 'https://via.placeholder.com/300x200?text=No+Image'}
                               className="product-image"
                               alt={item.name}
@@ -748,7 +785,7 @@ function Sale() {
                             {totalPrice.toLocaleString("th-TH")} ฿
                           </div>
                         </div>
-                      
+
                       </div>
                     </div>
 
@@ -823,9 +860,8 @@ function Sale() {
                                 className="progress-bar bg-success"
                                 role="progressbar"
                                 style={{
-                                  width: `${
-                                    (item.qty / item.product.remainingQty) * 100
-                                  }%`,
+                                  width: `${(item.qty / item.product.remainingQty) * 100
+                                    }%`,
                                   borderRadius: "2px",
                                 }}
                               />
@@ -899,29 +935,29 @@ function Sale() {
           <tbody>
             {billToday.length > 0
               ? billToday.map((item) => (
-                  <tr key={item.id}>
-                    <td className="text-center">
-                      <button
-                        onClick={() => {
-                          setSelectedBill(item);
-                          setShowBillDetailModal(true);
-                        }}
-                        className="btn btn-primary"
-                      >
-                        <i className="fa fa-eye me-2"></i>
-                        ดูรายการ
-                      </button>
-                    </td>
-                    <td>{item.id}</td>
-                    <td>{dayjs(item.createdAt).format("DD/MM/YYYY HH:mm")}</td>
-                  </tr>
-                ))
+                <tr key={item.id}>
+                  <td className="text-center">
+                    <button
+                      onClick={() => {
+                        setSelectedBill(item);
+                        setShowBillDetailModal(true);
+                      }}
+                      className="btn btn-primary"
+                    >
+                      <i className="fa fa-eye me-2"></i>
+                      ดูรายการ
+                    </button>
+                  </td>
+                  <td>{item.id}</td>
+                  <td>{dayjs(item.createdAt).format("DD/MM/YYYY HH:mm")}</td>
+                </tr>
+              ))
               : null}
           </tbody>
         </table>
       </Modal>
 
-      <Modal 
+      <Modal
         show={showQtyModal}
         onHide={() => setShowQtyModal(false)}
         title="ปรับจำนวน"
@@ -954,11 +990,11 @@ function Sale() {
           />
 
           <div className="mt-3">
-            <button 
+            <button
               onClick={() => {
                 handleAddToBill();
                 setShowQtyModal(false);
-              }} 
+              }}
               className="btn btn-primary"
             >
               <i className="fa fa-check me-2"></i>เพิ่มลงบิล
@@ -975,44 +1011,71 @@ function Sale() {
         <div>
           <div className="mb-3">
             <label className="form-label">เลือกลูกค้าเพื่อสะสมแต้ม (ไม่บังคับ)</label>
-            <div className="input-group">
-              <select 
+            <div className="input-group position-relative">
+              <input
+                type="text"
                 className="form-control"
-                value={selectedCustomer?.id || ''}
+                placeholder="ค้นหาด้วยชื่อหรือเบอร์โทร..."
+                value={customerSearchText}
                 onChange={(e) => {
-                  const customerId = e.target.value;
-                  if (customerId) {
-                    const customer = customers.find(c => c.id === Number(customerId));
-                    setSelectedCustomer(customer || null);
-                    // รีเซ็ตค่าแต้มที่ใช้เมื่อเปลี่ยนลูกค้า
-                    setPointsToRedeem(0);
-                    setDiscountFromPoints(0);
-                  } else {
-                    setSelectedCustomer(null);
-                    setPointsToRedeem(0);
-                    setDiscountFromPoints(0);
+                  const value = e.target.value;
+                  setCustomerSearchText(value);
+                  searchCustomers(value);
+                  setShowCustomerDropdown(value.length > 0);
+                }}
+                onFocus={() => {
+                  if (customerSearchText.length > 0) {
+                    setShowCustomerDropdown(true);
+                    searchCustomers(customerSearchText);
                   }
                 }}
-              >
-                <option value="">-- ไม่เลือก --</option>
-                {customers && customers.map(customer => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name} - {customer.phone}
-                  </option>
-                ))}
-              </select>
+                onBlur={() => {
+                  // หน่วงเวลาเล็กน้อยเพื่อให้คลิกได้
+                  setTimeout(() => setShowCustomerDropdown(false), 200);
+                }}
+              />
               {selectedCustomer && (
-                <button 
+                <button
                   className="btn btn-outline-secondary"
                   type="button"
-                  onClick={() => {
-                    setSelectedCustomer(null);
-                    setPointsToRedeem(0);
-                    setDiscountFromPoints(0);
-                  }}
+                  onClick={clearCustomerSelection}
                 >
                   <i className="fa fa-times"></i>
                 </button>
+              )}
+
+              {/* Dropdown แสดงผลการค้นหา */}
+              {showCustomerDropdown && filteredCustomers.length > 0 && (
+                <div
+                  className="position-absolute w-100 bg-white border border-top-0 shadow-sm"
+                  style={{
+                    top: '100%',
+                    zIndex: 1050,
+                    maxHeight: '200px',
+                    overflowY: 'auto'
+                  }}
+                >
+                  {filteredCustomers.map(customer => (
+                    <div
+                      key={customer.id}
+                      className="px-3 py-2 border-bottom"
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: 'white',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                      onClick={() => selectCustomer(customer)}
+                    >
+                      <div className="fw-bold">{customer.name}</div>
+                      <small className="text-muted">{customer.phone}</small>
+                      {customer.points > 0 && (
+                        <small className="text-success ms-2">({customer.points} แต้ม)</small>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -1022,9 +1085,8 @@ function Sale() {
               <div className="alert alert-muted mb-3">
                 <h6 className="mb-1">ข้อมูลลูกค้า</h6>
                 <div><strong>ชื่อ:</strong> {selectedCustomer.name}</div>
-                <div><strong>เบอร์โทร:</strong> {selectedCustomer.phone}</div>
                 <div><strong>แต้มสะสม:</strong> {selectedCustomer.points || 0} แต้ม</div>
-               
+
                 <div className="mt-2 text-success">
                   <i className="fas fa-plus-circle me-1"></i>
                   จะได้รับแต้มเพิ่ม {Math.floor(totalPrice / 100)} แต้ม จากยอดซื้อครั้งนี้
@@ -1070,7 +1132,7 @@ function Sale() {
           </div>
 
 
-         <div className="mt-3">
+          <div className="mt-3">
             <label>ช่องทางการชำระเงิน</label>
           </div>
           <div>
@@ -1084,52 +1146,52 @@ function Sale() {
             </select>
           </div>
           <div>
-          {paymentMethod === "PromptPay" ? (
-            <div className="text-center mt-4">
-              <QRCodeSVG value={generateQRCode()} size={256} level="L" />
-              <p className="mt-2">สแกนเพื่อชำระเงิน</p>
-              <button onClick={handleEndSale} className="btn btn-success mt-2">
-                ยืนยันการชำระเงิน
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="mt-3">
-                <label>รับเงิน</label>
-                <input
-                  value={(inputMoney).toLocaleString("th-TH")}
-                  onChange={(e) => setInputMoney(e.target.value)}
-                  className="form-control text-end"
-                />
-              </div>
-              <div className="mt-3">
-                <label>เงินทอน</label>
-                <input
-                  value={(inputMoney - (totalPrice - discountFromPoints)).toLocaleString("th-TH")}
-                  className="form-control text-end"
-                  disabled
-                />
-              </div>
-              <div className="text-center mt-3">
-                <button
-                  onClick={(e) => setInputMoney(totalPrice - discountFromPoints)}
-                  className="btn btn-primary me-2"
-                >
-                  <i className="fa fa-check me-2"></i>
-                  จ่ายพอดี
-                </button>
-                <button
-                  onClick={handleEndSale}
-                  className="btn btn-success"
-                  disabled={inputMoney <= 0}
-                >
-                  <i className="fa fa-check me-2"></i>
-                  จบการขาย
+            {paymentMethod === "PromptPay" ? (
+              <div className="text-center mt-4">
+                <QRCodeSVG value={generateQRCode()} size={256} level="L" />
+                <p className="mt-2">สแกนเพื่อชำระเงิน</p>
+                <button onClick={handleEndSale} className="btn btn-success mt-2">
+                  ยืนยันการชำระเงิน
                 </button>
               </div>
-            </>
-            
-          )}
+            ) : (
+              <>
+                <div className="mt-3">
+                  <label>รับเงิน</label>
+                  <input
+                    value={(inputMoney).toLocaleString("th-TH")}
+                    onChange={(e) => setInputMoney(e.target.value)}
+                    className="form-control text-end"
+                  />
+                </div>
+                <div className="mt-3">
+                  <label>เงินทอน</label>
+                  <input
+                    value={(inputMoney - (totalPrice - discountFromPoints)).toLocaleString("th-TH")}
+                    className="form-control text-end"
+                    disabled
+                  />
+                </div>
+                <div className="text-center mt-3">
+                  <button
+                    onClick={(e) => setInputMoney(totalPrice - discountFromPoints)}
+                    className="btn btn-primary me-2"
+                  >
+                    <i className="fa fa-check me-2"></i>
+                    จ่ายพอดี
+                  </button>
+                  <button
+                    onClick={handleEndSale}
+                    className="btn btn-success"
+                    disabled={inputMoney <= 0}
+                  >
+                    <i className="fa fa-check me-2"></i>
+                    จบการขาย
+                  </button>
+                </div>
+              </>
+
+            )}
           </div>
         </div>
       </Modal>
@@ -1148,11 +1210,11 @@ function Sale() {
                   <th>รายการ</th>
                   <th>จำนวน</th>
                   <th className="text-end">ราคา</th>
-                
+
                 </tr>
               </thead>
               <tbody>
-              {selectedBill?.billSaleDetails?.map((item, index) => {
+                {selectedBill?.billSaleDetails?.map((item, index) => {
                   return (
                     <tr key={index}>
                       <td>{item.product.name}</td>
@@ -1179,7 +1241,7 @@ function Sale() {
               <span style={{ flex: 1, textAlign: "right" }}>
                 {lastBill?.billSaleDetails
                   ? lastBill.billSaleDetails.reduce((sum, item) => sum + (parseFloat(item.qty) * parseFloat(item.price)), 0).toLocaleString("th-TH", { minimumFractionDigits: 2 })
-                  : "0.00"} บาท
+                  : "0"} บาท
               </span>
             </div>
           </div>
@@ -1200,19 +1262,13 @@ function Sale() {
         <div style={{ padding: "10px" }}>
           {/* โลโก้หรือชื่อร้าน */}
           <div style={{ textAlign: "center", marginBottom: "8px" }}>
-            <div style={{ fontWeight: "bold", fontSize: "16px" }}>
-              {memberInfo?.name || "ชื่อร้านค้า"}
-            </div>
+
             {memberInfo?.address && (
               <div style={{ fontSize: "11px", color: "#666" }}>
                 {memberInfo.address}
               </div>
             )}
-            {memberInfo?.phone && memberInfo.phone !== "0656922937" && (
-              <div style={{ fontSize: "11px", color: "#666" }}>
-                โทร: {memberInfo.phone}
-              </div>
-            )}
+
             {memberInfo?.line && (
               <div style={{ fontSize: "11px", color: "#666" }}>
                 Line: {memberInfo.line}
@@ -1223,28 +1279,38 @@ function Sale() {
 
           {/* Bill Info */}
           <div style={{ marginBottom: "8px" }}>
-            <div>วันที่: {dayjs(lastBill?.createdAt).format("DD/MM/YYYY HH:mm")}</div>
+            <div>วันที่: {(() => {
+              if (!lastBill?.payDate) return '-';
+
+              // Parse ISO string directly without timezone conversion
+              const isoString = lastBill.payDate;
+              const [datePart, timePart] = isoString.split('T');
+              const [year, month, day] = datePart.split('-');
+              const [hour, minute] = timePart.split(':');
+
+              return `${day}/${month}/${year} ${hour}:${minute}`;
+            })()}</div>
             <div>เลขที่บิล: <b>{lastBill?.id || "-"}</b></div>
           </div>
           <hr style={{ border: "none", borderTop: "1px dashed #888" }} />
 
           {/* Items Table */}
-          <table style={{ width: "100%", marginBottom: "8px" }}>
+          <table style={{ width: "100%", marginBottom: "8px", borderCollapse: "separate", borderSpacing: "0 2px" }}>
             <thead>
               <tr>
-                <th style={{ textAlign: "left", fontSize: "13px" }}>รายการ</th>
-                <th style={{ textAlign: "center", fontSize: "13px" }}>จำนวน</th>
-                <th style={{ textAlign: "right", fontSize: "13px" }}>ราคา</th>
-                <th style={{ textAlign: "right", fontSize: "13px" }}>รวม</th>
+                <th style={{ textAlign: "left", fontSize: "13px", paddingRight: "8px" }}>รายการ</th>
+                <th style={{ textAlign: "center", fontSize: "13px", paddingLeft: "4px", paddingRight: "4px" }}>จำนวน</th>
+                <th style={{ textAlign: "right", fontSize: "13px", paddingLeft: "8px", paddingRight: "8px" }}>ราคา</th>
+                <th style={{ textAlign: "right", fontSize: "13px", paddingLeft: "8px" }}>รวม</th>
               </tr>
             </thead>
             <tbody>
               {lastBill?.billSaleDetails?.map((item, index) => (
                 <tr key={index}>
-                  <td style={{ textAlign: "left" }}>{item.product.name || "-"}</td>
-                  <td style={{ textAlign: "center" }}>{item.qty || 1}</td>
-                  <td style={{ textAlign: "right" }}>{Number(item.price).toLocaleString("th-TH", { minimumFractionDigits: 2 })}</td>
-                  <td style={{ textAlign: "right" }}>{(item.qty * item.price).toLocaleString("th-TH", { minimumFractionDigits: 2 })}</td>
+                  <td style={{ textAlign: "left", paddingRight: "8px", paddingTop: "2px", paddingBottom: "2px" }}>{item.product.name || "-"}</td>
+                  <td style={{ textAlign: "center", paddingLeft: "4px", paddingRight: "4px", paddingTop: "2px", paddingBottom: "2px" }}>{item.qty || 1}</td>
+                  <td style={{ textAlign: "right", paddingLeft: "8px", paddingRight: "8px", paddingTop: "2px", paddingBottom: "2px" }}>{parseInt(item.price).toLocaleString("th-TH")}</td>
+                  <td style={{ textAlign: "right", paddingLeft: "8px", paddingTop: "2px", paddingBottom: "2px" }}>{parseInt(item.qty * item.price).toLocaleString("th-TH")}</td>
                 </tr>
               ))}
             </tbody>
@@ -1257,14 +1323,17 @@ function Sale() {
             display: "flex",
             justifyContent: "space-between",
             marginBottom: "8px",
-            width: "100%"
+            marginTop: "8px",
+            width: "100%",
+            paddingTop: "4px",
+            fontWeight: "bold"
           }}>
-            // คำนวณยอดรวมจาก lastBill.billSaleDetails ใน slip
+            {/* คำนวณยอดรวมจาก lastBill.billSaleDetails ใน slip */}
             <span style={{ flex: 1, textAlign: "left" }}>รวมทั้งสิ้น:</span>
-            <span style={{ flex: 1, textAlign: "right" }}>
+            <span style={{ flex: 1, textAlign: "right", paddingLeft: "20px" }}>
               {lastBill?.billSaleDetails
-                ? lastBill.billSaleDetails.reduce((sum, item) => sum + (parseFloat(item.qty) * parseFloat(item.price)), 0).toLocaleString("th-TH", { minimumFractionDigits: 2 })
-                : "0.00"} บาท
+                ? parseInt(lastBill.billSaleDetails.reduce((sum, item) => sum + (parseFloat(item.qty) * parseFloat(item.price)), 0)).toLocaleString("th-TH")
+                : "0"} บาท
             </span>
           </div>
 

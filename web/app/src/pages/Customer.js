@@ -3,233 +3,608 @@ import Template from "../components/Template";
 import config from "../config";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useNavigate } from 'react-router-dom';
+import banknotes from '../assets/banknotes.png';
+import growth from '../assets/growth.svg';
+import product from '../assets/product.png';
+import star from '../assets/star.png';
+import calendar from '../assets/calendar.svg';
 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from "chart.js";
+import { Bar, Pie, Line } from "react-chartjs-2";
 
-function Customer() {
-    const [customers, setCustomers] = useState([]);
-    const [editCustomer, setEditCustomer] = useState(null);
-    const [newCustomer, setNewCustomer] = useState({
-        name: '',
-        phone: '',
-        email: '',
-        address: ''
-    });
-    const [showForm, setShowForm] = useState(false);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
-    useEffect(() => {
-        loadCustomers();
-    }, []);
+function Dashboard() {
+  const myDate = new Date();
+  const [year] = useState(myDate.getFullYear());
+  const [month] = useState(myDate.getMonth() + 1);
+  const [viewType] = useState("daily"); 
+  const [topSellingViewType, setTopSellingViewType] = useState('products');
+  const navigate = useNavigate();
 
-    const loadCustomers = async () => {
-        try {
-            const response = await axios.get(
-                config.api_path + "/customers", 
-                config.headers()
-            ); // เพิ่ม config.headers()
-            if (response.data.result) {
-                setCustomers(response.data.result);
-            }
-        } catch (error) {
-            console.error("Error loading customers:", error);
-            Swal.fire({
-                title: "Error",
-                text: error.response?.data?.error || "Failed to load customers",
-                icon: "error"
-            });
-        }
-    };
+  const [stockData, setStockData] = useState([]);
+  const [topSellingProducts, setTopSellingProducts] = useState([]);
+  const [topSellingCategories, setTopSellingCategories] = useState([]);
+  const [todaySales, setTodaySales] = useState({
+    date: new Date(),
+    totalAmount: 0,
+    billCount: 0,
+    averagePerBill: 0,
+    hourlyData: [],
+    topProducts: [],
+    growthRate: 0,
+    yesterdayTotal: 0,
+    yesterdayBillCount: 0,
+    yesterdayAveragePerBill: 0,
+  });
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [paymentStats, setPaymentStats] = useState([]);
 
-    const handleEdit = (customer) => {
-        setEditCustomer(customer);
-    };
+  
 
-    const handleSave = async () => {
-        try {
-            const response = await axios.put(
-                config.api_path + "/customer/" + editCustomer.id, 
-                editCustomer,
-                config.headers()  
-            );
-            
-            if (response.data.message === 'success') {
-                setEditCustomer(null);
-                loadCustomers();
-                Swal.fire("สำเร็จ", "อัปเดตข้อมูลลูกค้าเรียบร้อย", "success");
-            }
-        } catch (error) {
-            console.error("Error updating customer:", error);
-            if (error.response?.data?.error === "กรุณาเข้าสู่ระบบใหม่") {
-                Swal.fire({
-                    title: "เซสชันหมดอายุ",
-                    text: "กรุณาเข้าสู่ระบบใหม่",
-                    icon: "warning",
-                    confirmButtonText: "เข้าสู่ระบบ"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Redirect to login page or handle re-authentication
-                        window.location.href = "/login";
-                    }
-                });
-            } else {
-                Swal.fire("Error", error.response?.data?.error || "ไม่สามารถอัปเดตข้อมูลลูกค้าได้", "error");
-            }
-        }
-    };
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
 
-    const handleCreateCustomer = async (e) => {
-        e.preventDefault();
-        
-        // Validate phone number
-        if (!/^\d{10}$/.test(newCustomer.phone)) {
-            Swal.fire('Error', 'กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (10 หลัก)', 'error');
-            return;
-        }
+    return () => clearInterval(timer);
+  }, []);
 
-        try {
-            const response = await axios.post(
-                `${config.api_path}/customer`,
-                newCustomer,
-                config.headers()
-            );
+  useEffect(() => {
+    reportTopSellingProducts();
+    reportTopSellingCategories();
+    getTodaySalesReport();
+    getPaymentStats();
+  }, [year, month, viewType]);
 
-            if (response.data.message === 'success') {
-                await loadCustomers();
-                Swal.fire('สำเร็จ', 'เพิ่มข้อมูลลูกค้าเรียบร้อย', 'success');
-                setNewCustomer({ name: '', phone: '', email: '', address: '' });
-                setShowForm(false);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            if (error.response?.data?.error === "กรุณาเข้าสู่ระบบใหม่") {
-                Swal.fire('Error', 'กรุณาเข้าสู่ระบบใหม่', 'error');
-            } else {
-                Swal.fire('Error', error.response?.data?.error || 'ไม่สามารถเพิ่มข้อมูลลูกค้าได้', 'error');
-            }
-        }
+ 
+
+ 
+
+  const reportTopSellingProducts = async () => {
+    try {
+      const url = config.api_path + "/reportTopSellingProducts";
+      const res = await axios.get(url, config.headers());
+      
+      if (res.data.message === "success") {
+        const filteredResults = res.data.results.slice(0, 5);
+        setTopSellingProducts(filteredResults);
+      }
+    } catch (e) {
+      Swal.fire({
+        title: "error",
+        text: e.message,
+        icon: "error",
+      });
+    }
+  };
+
+  const reportTopSellingCategories = async () => {
+    try {
+      const url = config.api_path + "/reportTopSellingCategories";
+      const res = await axios.get(url, config.headers());
+      
+      if (res.data.message === "success") {
+        // Don't filter by status as API now does the filtering correctly
+        setTopSellingCategories(res.data.results);
+      }
+    } catch (e) {
+      console.error("Error fetching top selling categories:", e);
+      // Set a default value in case of error
+      setTopSellingCategories([{
+        category: 'เกิดข้อผิดพลาดในการโหลดข้อมูล',
+        totalQty: 0,
+        totalAmount: 0,
+        percentage: 100
+      }]);
+      
+      Swal.fire({
+        title: "error", 
+        text: e.message,
+        icon: "error",
+      });
+    }
+  };
+
+  const getTodaySalesReport = async () => {
+    try {
+      const url = config.api_path + "/todaySalesReport";
+      const res = await axios.get(url, config.headers());
+
+      if (res.data.message === "success") {
+        const data = res.data.results;
+
+        setTodaySales({
+          date: new Date(data.date),
+          totalAmount: data.totalAmount || 0,
+          billCount: data.billCount || 0,
+          averagePerBill: data.averagePerBill || 0,
+          hourlyData: data.hourlyData || [],
+          topProducts: data.topProducts || [],
+          growthRate: data.growthRate || 0,
+          yesterdayTotal: data.yesterdayTotal || 0,
+          yesterdayBillCount: data.yesterdayBillCount || 0,
+          yesterdayAveragePerBill: data.yesterdayAveragePerBill || 0,
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        title: "error",
+        text: error.message,
+        icon: "error",
+      });
+    }
+  };
+
+  const getPaymentStats = async () => {
+    try {
+      const url = config.api_path + "/paymentMethodStats";
+      const res = await axios.get(url, config.headers());
+      if (res.data.message === "success") {
+        setPaymentStats(res.data.results);
+      }
+    } catch (e) {
+      Swal.fire({
+        title: "error",
+        text: e.message,
+        icon: "error",
+      });
+    }
+  };
+
+ 
+
+const renderTopSellingContent = () => {
+  if (topSellingViewType === 'products') {
+    // คำนวณจำนวนรวมทั้งหมดสำหรับการคำนวณเปอร์เซ็นต์
+    const totalQty = topSellingProducts.reduce((sum, item) =>
+      sum + parseInt(item.totalQty || 0), 0);
+
+    return topSellingProducts.length > 0 ? (
+        <div className="top-selling-container p-2">
+          <div className="row">
+            <div className="col-12">
+            {topSellingProducts.map((item, index) => {
+                const productName = item.productName || 'สินค้าไม่มีชื่อ';
+              const amount = parseFloat(item.totalAmount || 0);
+              const actualQty = parseInt(item.totalQty || 0);
+                
+                let percentage = "0.00";
+                if (totalQty > 0) {
+                  percentage = ((actualQty / totalQty) * 100).toFixed(2);
+                } else if (index === 0 && topSellingProducts.length === 1) {
+                  percentage = "100.00";
+                }
+                
+                // Calculate width for progress bar based on quantity percentage
+                const barWidth = totalQty > 0 ? `${Math.max(percentage, 5)}%` : '5%';
+              
+              return (
+                <div
+                  key={index}
+                    className="mb-3 position-relative product-card"
+                    style={{
+                      borderRadius: '12px',
+                      padding: '16px',
+                      background: 'white',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                      border: '1px solid rgba(0,0,0,0.05)',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {/* Rank badge */}
+                    <div 
+                  style={{
+                        position: 'absolute',
+                        top: '0px',
+                        left: '0px',
+                        background: ['#FF3860', '#3273DC', '#FFDD57', '#23D160', '#209CEE'][index],
+                        borderRadius: '0 0 12px 0',
+                        padding: '5px 15px',
+                        color: index === 2 ? '#333' : 'white',
+                        fontWeight: 'bold',
+                        fontSize: '16px',
+                        boxShadow: '2px 2px 5px rgba(0,0,0,0.1)'
+                      }}
+                    >
+                      #{index + 1}
+                    </div>
+                    
+                    {/* Product info */}
+                    <div className="ps-3 pt-4">
+                      <div className="mb-2">
+                        <div className="d-flex justify-content-between">
+                          <h5 style={{ fontWeight: 'bold', color: '#333' }}>{productName}</h5>
+                          <span className="text-success fw-bold" style={{ fontSize: '1.2rem' }}>{actualQty} ชิ้น</span>
+                        </div>
+                        
+                        <div className="d-flex justify-content-between text-muted small">
+                          <div> ฿{amount.toLocaleString('th-TH')}</div>
+                          <div>{percentage}%</div>
+                        </div>
+                      </div>
+                      
+                       {/* Progress bar แสดงตามจำนวนที่ขาย */}
+                      <div className="progress mt-2" style={{ height: '6px' }}>
+                        <div 
+                          className="progress-bar" 
+                          role="progressbar" 
+                          style={{
+                            width: barWidth,
+                            background: ['#FF3860', '#3273DC', '#FFDD57', '#23D160', '#209CEE'][index]
+                          }} 
+                          aria-valuenow={percentage}
+                          aria-valuemin="0" 
+                          aria-valuemax="100"
+                        ></div>
+                  </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    ) : (
+      <div className="alert alert-info text-center">
+        <i className="fas fa-question-circle fa-2x mb-2"></i>
+        <p>ไม่มีข้อมูลสินค้าขายดี</p>
+      </div>
+    );
+  } else {
+    // คำนวณจำนวนรวมทั้งหมดสำหรับหมวดหมู่
+    const totalQty = topSellingCategories.reduce((sum, item) =>
+      sum + parseInt(item.totalQty || 0), 0);
+
+    return topSellingCategories.length > 0 ? (
+        <div className="top-selling-container p-2">
+          <div className="row">
+            <div className="col-12">
+              {topSellingCategories.map((item, index) => {
+                // Handle missing data with defaults
+                const categoryName = item.category || 'ไม่ระบุหมวดหมู่';
+                const amount = parseFloat(item.totalAmount || 0);
+                const qty = parseInt(item.totalQty || 0);
+                
+                // Calculate percentage based on quantity
+                let percentage = "0.00";
+                if (totalQty > 0) {
+                  percentage = ((qty / totalQty) * 100).toFixed(2);
+                } else if (index === 0 && topSellingCategories.length === 1) {
+                  percentage = "100.00";
+                }
+                
+                // Calculate width for progress bar based on quantity percentage
+                const barWidth = totalQty > 0 ? `${Math.max(percentage, 5)}%` : '5%';
+              
+              return (
+                <div
+                  key={index}
+                    className="mb-3 position-relative category-card"
+                    style={{
+                      borderRadius: '12px',
+                      padding: '16px',
+                      background: 'white',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                      border: '1px solid rgba(0,0,0,0.05)',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {/* Rank badge */}
+                    <div 
+                  style={{
+                        position: 'absolute',
+                        top: '0px',
+                        left: '0px',
+                        background: ['#FF3860', '#3273DC', '#FFDD57', '#23D160', '#209CEE'][index],
+                        borderRadius: '0 0 12px 0',
+                        padding: '5px 15px',
+                        color: index === 2 ? '#333' : 'white',
+                        fontWeight: 'bold',
+                        fontSize: '16px',
+                        boxShadow: '2px 2px 5px rgba(0,0,0,0.1)'
+                      }}
+                    >
+                      #{index + 1}
+                    </div>
+                    
+                    {/* Category info */}
+                    <div className="ps-3 pt-4">
+                      <div className="mb-2">
+                        <div className="d-flex justify-content-between">
+                          <h5 style={{ fontWeight: 'bold', color: '#333' }}>{categoryName}</h5>
+                          <span className="text-success fw-bold" style={{ fontSize: '1.2rem' }}>{qty} ชิ้น</span>
+                        </div>
+                        
+                        <div className="d-flex justify-content-between text-muted small">
+                          <div> ฿{amount.toLocaleString('th-TH')}</div>
+                          <div>{percentage}%</div>
+                        </div>
+                      </div>
+                      
+                      {/* Progress bar แสดงตามจำนวนที่ขาย */}
+                      <div className="progress mt-2" style={{ height: '6px' }}>
+                        <div 
+                          className="progress-bar" 
+                          role="progressbar" 
+                          style={{
+                            width: barWidth,
+                            background: ['#FF3860', '#3273DC', '#FFDD57', '#23D160', '#209CEE'][index]
+                          }} 
+                          aria-valuenow={percentage}
+                          aria-valuemin="0" 
+                          aria-valuemax="100"
+                        ></div>
+                  </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    ) : (
+        <div className="text-center w-100 d-flex flex-column align-items-center justify-content-center" style={{ height: '100%' }}>
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="#8a94a6" style={{ marginBottom: 8 }}>
+            <rect x="3" y="10" width="3" height="7"/><rect x="9" y="7" width="3" height="10"/><rect x="15" y="4" width="3" height="13"/>
+          </svg>
+          <div style={{ color: '#8a94a6', fontSize: 15, fontWeight: 500 }}>
+        ไม่มีข้อมูลหมวดหมู่ขายดี
+          </div>
+      </div>
+    );
+  }
+};
+
+  const renderPaymentStats = () => {
+    const total = paymentStats.reduce((sum, stat) => sum + parseFloat(stat.total || 0), 0);
+
+    const paymentColors = {
+      'เงินสด': '#FF6384',
+      'โอนเงิน': '#36A2EB',
+      'บัตรเครดิต': '#FFCE56',
+      'ไม่ระบุ': '#4BC0C0',
     };
 
     return (
-        <Template>
-            <div className="container mt-4">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2>จัดการข้อมูลลูกค้า</h2>
-                    <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-                        {showForm ? 'ปิดฟอร์ม' : 'เพิ่มลูกค้าใหม่'}
-                    </button>
-                </div>
-
-                {showForm && (
-                    <div className="card mb-4">
-                        <div className="card-body">
-                            <h4 className="card-title">เพิ่มลูกค้าใหม่</h4>
-                            <form onSubmit={handleCreateCustomer}>
-                                <div className="row">
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">ชื่อลูกค้า *</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            value={newCustomer.name}
-                                            onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">เบอร์โทรศัพท์ *</label>
-                                        <input
-                                            type="tel"
-                                            className="form-control"
-                                            value={newCustomer.phone}
-                                            onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})}
-                                            pattern="[0-9]{10}"
-                                            title="กรุณากรอกเบอร์โทรศัพท์ 10 หลัก"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">อีเมล *</label>
-                                        <input
-                                            type="email"
-                                            className="form-control"
-                                            value={newCustomer.email}
-                                            onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})}
-                                            required
-                                        />
-                                    </div>
-                                    
-                                </div>
-                                <button type="submit" className="btn btn-success">บันทึกข้อมูล</button>
-                            </form>
-                        </div>
+      <div className="p-3">
+        <div className="mb-3 text-center">
+          <h5 className="text-muted">ยอดรวมทั้งหมด: ฿{total.toLocaleString('th-TH')}</h5>
+          </div>
+        <div className="payment-methods-list">
+          {paymentStats.length > 0 ? (
+            paymentStats.map((stat, index) => {
+              const amount = parseFloat(stat.total || 0);
+              const percentage = ((amount / total) * 100).toFixed(2);
+              const color = paymentColors[stat.paymentMethod] || `hsl(${index * 60}, 70%, 60%)`;
+              
+              return (
+                <div
+                  key={index}
+                  className="payment-method-item mb-3 p-3"
+                  style={{
+                    backgroundColor: 'white',
+                    borderRadius: '10px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                    borderLeft: `5px solid ${color}`
+                  }}
+                >
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h5 style={{ fontWeight: 'bold', color: '#333' }}>{stat.paymentMethod}</h5>
+                      <div className="text-muted">{stat.count || 0} รายการ</div>
                     </div>
-                )}
-
-                <table className="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Phone</th>
-                            <th>Email</th>
-                            <th>Points</th>
-                            <th>Membership</th>
-                            <th>Total Spent</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {customers.map((customer) => (
-                            <tr key={customer.id}>
-                                <td>
-                                    {editCustomer?.id === customer.id ? (
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            value={editCustomer.name}
-                                            onChange={(e) => setEditCustomer({...editCustomer, name: e.target.value})}
-                                        />
-                                    ) : customer.name}
-                                </td>
-                                <td>
-                                    {editCustomer?.id === customer.id ? (
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            value={editCustomer.phone}
-                                            onChange={(e) => setEditCustomer({...editCustomer, phone: e.target.value})}
-                                        />
-                                    ) : customer.phone}
-                                </td>
-                                <td>
-                                    {editCustomer?.id === customer.id ? (
-                                        <input
-                                            type="email"
-                                            className="form-control"
-                                            value={editCustomer.email}
-                                            onChange={(e) => setEditCustomer({...editCustomer, email: e.target.value})}
-                                        />
-                                    ) : customer.email}
-                                </td>
-                                <td>{customer.points}</td>
-                                <td>{customer.membershipTier}</td>
-                                <td>{customer.totalSpent}</td>
-                                <td>
-                                    {editCustomer?.id === customer.id ? (
-                                        <button className="btn btn-success me-2" onClick={handleSave}>
-                                            Save
-                                        </button>
-                                    ) : (
-                                        <button className="btn btn-primary me-2" onClick={() => handleEdit(customer)}>
-                                            Edit
-                                        </button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </Template>
+                    <div className="text-end">
+                      <h5 style={{ color: '#0d6efd', fontWeight: 'bold' }}>฿{amount.toLocaleString('th-TH')}</h5>
+                      <small className="text-muted">{percentage}%</small>
+                  </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center p-5">
+              <i className="fas fa-random mb-2" style={{ fontSize: '2.8rem', color: '#bdbdbd' }}></i>
+              <div className="text-muted" style={{ fontSize: '1.1rem' }}>ไม่มีข้อมูลวิธีการชำระเงินในวันนี้</div>
+          </div>
+          )}
+        </div>
+      </div>
     );
+  };
+
+  const styles = {
+    container: {
+      backgroundColor: "#f8f9fa",
+      padding: "25px",
+      borderRadius: "15px",
+      fontFamily: "'Kanit', sans-serif",
+      minHeight: "100vh",
+    },
+    summaryCard: {
+      transition: "transform 0.2s, box-shadow 0.2s",
+      cursor: "pointer",
+      height: "100%",
+      border: "none",
+      borderRadius: "12px",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    },
+    modernHeader: {
+      backgroundColor: "#abf7",
+      color: "white",
+      padding: "15px 20px",
+      fontSize: "18px",
+      fontWeight: "600",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      borderRadius: "12px 12px 0 0",
+      background: 'linear-gradient(135deg, #0d6ed 0%, #0dcaf0 100%)',
+    },
+    chartIcon: {
+      cursor: 'pointer',
+      padding: '5px 10px',
+      fontSize: '1.2rem',
+      transition: 'all 0.2s'
+    },
+    activeIcon: {
+      color: '#0dcaf0',
+      transform: 'scale(1.2)'
+    },
+    inactiveIcon: {
+      color: '#6c757d'
+    },
+    clickableNumber: {
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      textDecoration: 'none',
+      padding: '4px 8px',
+      borderRadius: '4px'
+    },
+    clickableNumberHover: {
+      backgroundColor: '#e9ecef',
+      color: '#0dcaf0'
+    }
+  };
+
+ 
+
+  return (
+    <Template>
+      <div style={styles.container}>
+        <div className="row mb-4">
+          <div className="col-12">
+            <div style={{ ...styles.chartContainer, background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)' }}>
+              <div style={styles.modernHeader}>
+                <h4 className="text-dark" style={{ margin: 0, fontWeight: '600' }}>
+                  ข้อมูลสรุปล่าสุดวันที่ {currentTime.toLocaleDateString('th-TH', { year: 'numeric', month: '2-digit', day: '2-digit' })} | <span style={{ fontWeight: 'bold' }}>{currentTime.toLocaleTimeString('th-TH')}</span>
+                </h4>
+              </div>
+              <div className="row p-4 g-4">
+                <div className="col-md-4">
+                  <div style={styles.statCard} className="text-center">
+                    <h5 className="mb-0" style={{ color: '#0d6efd', fontWeight: 600 }}><i className="fas fa-coins me-2"></i>ยอดรวม</h5>
+                    <h3 className="text-primary mb-0">฿ {todaySales.totalAmount.toLocaleString()}</h3>
+                    <div className="text-muted mt-2" style={{ fontSize: '0.95em' }}>เมื่อวาน: ฿ {todaySales.yesterdayTotal.toLocaleString()}</div>
+                  </div>
+                </div>
+                <div className="col-md-4">
+                  <div style={styles.statCard} className="text-center">
+                    <h5 className="mb-0" style={{ color: '#0dcaf0', fontWeight: 600 }}><i className="fas fa-receipt me-2"></i>จำนวนบิล</h5>
+                    <h3 className="text-info mb-0">{todaySales.billCount} บิล</h3>
+                    <div className="text-muted mt-2" style={{ fontSize: '0.95em' }}>เมื่อวาน: {todaySales.yesterdayBillCount} บิล</div>
+                  </div>
+                </div>
+                <div className="col-md-4">
+                  <div style={styles.statCard} className="text-center">
+                    <h5 className="mb-0" style={{ color: '#198754', fontWeight: 600 }}><i className="fas fa-divide me-2"></i>เฉลี่ย/บิล</h5>
+                    <h3 className="text-success mb-0">฿ {todaySales.averagePerBill.toLocaleString()}</h3>
+                    <div className="text-muted mt-2" style={{ fontSize: '0.95em' }}>เมื่อวาน: ฿ {todaySales.yesterdayAveragePerBill.toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="row g-4">
+          <div className="col-md-6">
+            <div className="card h-100" style={{...styles.summaryCard, overflow: 'hidden'}}>
+              <div className="card-header d-flex align-items-center" 
+                  style={{ 
+                    backgroundColor: 'white',
+                    paddingTop: '15px', 
+                    paddingBottom: '15px',
+                    borderBottom: '1px solid rgba(0,0,0,0.05)'
+                  }}>
+                <i className="fa fa-trophy me-2 text-warning"></i>
+                <div style={{ position: 'relative', marginRight: 8 }}>
+                    <select
+                      value={topSellingViewType}
+                    onChange={e => setTopSellingViewType(e.target.value)}
+                    style={{
+                      appearance: 'none',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none',
+                      border: 'none',
+                      background: 'none',
+                      fontWeight: 600,
+                      color: '#333',
+                      fontSize: 16,
+                      padding: '2px 22px 2px 0',
+                      cursor: 'pointer',
+                      outline: 'none',
+                    }}
+                  >
+                    <option value="products">สินค้า</option>
+                    <option value="categories">หมวดหมู่</option>
+                  </select>
+                  <span style={{
+                    position: 'absolute',
+                    right: 4,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    pointerEvents: 'none',
+                    color: '#8a94a6',
+                    fontSize: 12
+                  }}>▼</span>
+                </div>
+                <span style={{ fontWeight: 600, fontSize: 16, color: '#333' }}>ขายดี 5 อันดับ</span>
+              </div>
+              <div className="card-body" style={{ padding: 0, overflowY: 'auto', maxHeight: '500px' }}>
+                {(topSellingViewType === 'products' ? topSellingProducts.length === 0 : topSellingCategories.length === 0) ? (
+                  <div className="text-center w-100 d-flex flex-column align-items-center justify-content-center" style={{ height: '250px' }}>
+                    <i className="fas fa-chart-bar fa-3x mb-3 text-muted"></i>
+                    <div style={{ color: '#8a94a6', fontSize: 15, fontWeight: 500 }}>
+                      ไม่มีข้อมูล{topSellingViewType === 'products' ? 'สินค้าขายดี' : 'หมวดหมู่ขายดี'}
+                        </div>
+                  </div>
+                ) : (
+                  renderTopSellingContent()
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="col-md-6">
+            <div className="card h-100" style={styles.summaryCard}>
+              <div className="card-header d-flex align-items-center" style={{ 
+                backgroundColor: '#f8f9fa', 
+                padding: '15px 20px',
+                borderBottom: '1px solid rgba(0,0,0,0.05)'
+              }}>
+                <i className="fas fa-money-bill-wave me-2" style={{ color: '#0d6efd' }}></i>
+                <span className="fw-bold" style={{ fontSize: '1.1rem' }}>วิธีการชำระเงิน</span>
+              </div>
+              <div className="card-body" style={{ overflowY: 'auto' }}>
+                {renderPaymentStats()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Template>
+  );
 }
 
-export default Customer;
+export default Dashboard;

@@ -2,7 +2,7 @@ import Template from "../components/Template";
 import Swal from "sweetalert2";
 import config from "../config";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Modal from "../components/Modal";
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
@@ -19,10 +19,6 @@ function BillSales() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  useEffect(() => {
-    filterBills();
-  }, [billSales, searchBillNo, startDate, endDate]);
 
   const fetchData = async () => {
     try {
@@ -45,7 +41,7 @@ function BillSales() {
     }
   };
 
-  const filterBills = () => {
+  const filterBills = useCallback(() => {
     let filtered = [...billSales];
 
     // กรองตามเลขบิล
@@ -58,13 +54,27 @@ function BillSales() {
     // กรองตามช่วงวันที่
     if (startDate && endDate) {
       filtered = filtered.filter(bill => {
-        const billDate = new Date(bill.createdAt);
-        return billDate >= startDate && billDate <= endDate;
+        // แยกวันที่จาก ISO string โดยตรง
+        const isoString = bill.payDate;
+        const [datePart] = isoString.split('T');
+        const [year, month, day] = datePart.split('-');
+        const billDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        
+        return billDate >= start && billDate <= end;
       });
     }
 
     setFilteredBills(filtered);
-  };
+  }, [billSales, searchBillNo, startDate, endDate]);
+
+  useEffect(() => {
+    filterBills();
+  }, [filterBills]);
 
   return (
     <>
@@ -130,13 +140,21 @@ function BillSales() {
                            
                             <td className="fw-bold text-primary">{item.id}</td>
                             <td>
-                              {new Date(item.createdAt).toLocaleDateString('th-TH', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+                              {(() => {
+                                // แยกวันที่และเวลาจาก ISO string โดยตรง ไม่ให้ JavaScript แปลง timezone
+                                const isoString = item.payDate;
+                                const [datePart, timePart] = isoString.split('T');
+                                const [year, month, day] = datePart.split('-');
+                                const [hour, minute] = timePart.split(':');
+                                
+                                const months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                                               'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+                                
+                                const thaiYear = parseInt(year) + 543;
+                                const monthName = months[parseInt(month) - 1];
+                                
+                                return `${parseInt(day)} ${monthName} ${thaiYear} เวลา ${hour}:${minute}`;
+                              })()}
                             </td>
                             <td className="#">
                               <button
@@ -189,13 +207,21 @@ function BillSales() {
                 <div className="card-body p-3">
                   <h6 className="text-muted mb-2">วันที่ออกบิล</h6>
                   <p className="mb-0">
-                    {selectBill?.createdAt && new Date(selectBill.createdAt).toLocaleDateString('th-TH', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {selectBill?.payDate && (() => {
+                      // แยกวันที่และเวลาจาก ISO string โดยตรง ไม่ให้ JavaScript แปลง timezone
+                      const isoString = selectBill.payDate;
+                      const [datePart, timePart] = isoString.split('T');
+                      const [year, month, day] = datePart.split('-');
+                      const [hour, minute] = timePart.split(':');
+                      
+                      const months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                                     'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+                      
+                      const thaiYear = parseInt(year) + 543;
+                      const monthName = months[parseInt(month) - 1];
+                      
+                      return `${parseInt(day)} ${monthName} ${thaiYear} เวลา ${hour}:${minute}`;
+                    })()}
                   </p>
                 </div>
               </div>
@@ -231,7 +257,7 @@ function BillSales() {
             <div className="col-md-4">
               <div className="card bg-primary text-white border-0">
                 <div className="card-body p-3">
-                  <h6 className="mb-2">ยอดรวมทั้งสิ้น (รวม VAT)</h6>
+                  <h6 className="mb-2">ยอดรวมทั้งสิ้น </h6>
                   <h4 className="mb-0">
                     ฿{selectBill?.totalAmount?.toLocaleString('th-TH')}
                   </h4>
@@ -281,7 +307,6 @@ function BillSales() {
                         </td>
                         <td className="text-end">
                           <div>฿{parseInt(item.price).toLocaleString("th-TH")}</div>
-                          <small className="text-muted">VAT: ฿{(item.price * 0.07).toLocaleString("th-TH")}</small>
                         </td>
                         <td className="text-end">{item.qty} ชิ้น</td>
                       </tr>

@@ -9,7 +9,7 @@ function Register() {
     const [formData, setFormData] = useState({
         username: '',
         password: '',
-        fristname: '',
+        firstname: '',
         lastname: '',
         email: '',
         phone: '',
@@ -264,13 +264,13 @@ function Register() {
                                 <div className="col-md-6">
                                     <div className="input-group">
                                         <span className="input-group-text bg-light"><FaUser /></span>
-                                        <input type="text" className="form-control" placeholder="ชื่อ" value={formData.firstname} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))} required />
+                                        <input type="text" className="form-control" placeholder="ชื่อ" value={formData.firstname} onChange={(e) => setFormData(prev => ({ ...prev, firstname: e.target.value }))} required />
                                     </div>
                                 </div>
                                 <div className="col-md-6">
                                     <div className="input-group">
                                         <span className="input-group-text bg-light"><FaUser /></span>
-                                        <input type="text" className="form-control" placeholder="นามสกุล" value={formData.lastname} onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))} required />
+                                        <input type="text" className="form-control" placeholder="นามสกุล" value={formData.lastname} onChange={(e) => setFormData(prev => ({ ...prev, lastname: e.target.value }))} required />
                                     </div>
                                 </div>
                             </div>
