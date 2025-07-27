@@ -1,8 +1,4 @@
 node_modules
 .history
 .codesight
-.env
-.env.local
-.env.production
-vercel.json
 .vercel

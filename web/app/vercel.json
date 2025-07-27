@@ -24,7 +24,7 @@
     }
   ],
   "env": {
-    "REACT_APP_API_URL": "https://backendpos-two.vercel.app",
+    "REACT_APP_API_URL": "backend",
     "CI": "false"
   },
   "build": {
