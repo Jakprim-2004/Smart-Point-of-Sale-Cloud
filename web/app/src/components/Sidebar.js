@@ -27,21 +27,15 @@ const Sidebar = forwardRef((props, sidebarRef) => {
     documents: false,
     CRM: false
   });
-  const [userLevel, setUserLevel] = useState("");
   const navigate = useNavigate();
   const [showBankModal, setShowBankModal] = useState(false);
 
+ 
+  const isOwner = localStorage.getItem("userRole") === "owner";
+
   useEffect(() => {
     fetchData();
-    // Get user level from localStorage
-    const storedUserType = localStorage.getItem("userType");
-    const storedUserLevel = localStorage.getItem("userLevel");
-    setUserLevel(
-      storedUserLevel || (storedUserType === "member" ? "owner" : "employee")
-    );
   }, []);
-
-  const isOwner = userLevel === "owner";
 
   //This will display:
 
@@ -91,7 +85,7 @@ const Sidebar = forwardRef((props, sidebarRef) => {
       }).then((result) => {
         if (result.isConfirmed) {
           localStorage.removeItem("token");
-          window.location.href = "/login";
+          window.location.href = "/";
         }
       });
       return true;
@@ -101,18 +95,10 @@ const Sidebar = forwardRef((props, sidebarRef) => {
 
   const fetchData = async () => {
     try {
-      // Get stored user type to determine which endpoint to use
-      const userType = localStorage.getItem("userType");
-      const endpoint = userType === "employee" ? "/user/info" : "/member/info";
-
+      const endpoint = "/member/info";
       const res = await axios.get(config.api_path + endpoint, config.headers());
-
       if (res.data.message === "success") {
-        if (userType === "employee") {
-          setfirstName(res.data.result.name); // For employees, use name from user table
-        } else {
-          setfirstName(res.data.result.firstName); // For owners, use firstName from member table
-        }
+        setfirstName(res.data.result.firstName); 
       }
     } catch (error) {
       if (!handleTokenError(error)) {
@@ -132,9 +118,6 @@ const Sidebar = forwardRef((props, sidebarRef) => {
     }));
   };
 
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
 
   useImperativeHandle(sidebarRef, () => ({
     refreshCountBill() {
@@ -142,107 +125,7 @@ const Sidebar = forwardRef((props, sidebarRef) => {
     },
   }));
 
-  const styles = {
-    sidebar: {
-      boxShadow: "2px 0 10px rgba(0,0,0,0.2)",
-      transition: "all 0.3s ease",
-      height: "100vh",
-      background: "linear-gradient(180deg, #2c3e50 0%, #3498db 100%)",
-    },
-    brandLink: {
-      display: "flex",
-      alignItems: "center",
-      padding: "15px",
-      background: "rgba(255,255,255,0.1)",
-      borderBottom: "1px solid rgba(255,255,255,0.1)",
-      transition: "all 0.3s ease",
-    },
-    brandImage: {
-      width: "35px",
-      height: "35px",
-      marginRight: "10px",
-      borderRadius: "50%",
-      border: "2px solid rgba(255,255,255,0.2)",
-    },
-    brandText: {
-      color: "#fff",
-      fontSize: "1.2rem",
-      fontWeight: "500",
-    },
-    userPanel: {
-      position: "relative", // Add this
-      background: "rgba(255,255,255,0.1)",
-      padding: "20px",
-      margin: "15px",
-      borderRadius: "10px",
-      boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-    },
-    signOutButton: {
-      position: "absolute",
-      top: "10px",
-      right: "10px",
-      background: "rgba(255,255,255,0.1)",
-      border: "none",
-      borderRadius: "50%",
-      width: "35px",
-      height: "35px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#fff",
-      transition: "all 0.3s ease",
-      cursor: "pointer",
-      "&:hover": {
-        background: "rgba(255,255,255,0.2)",
-      },
-    },
-    upgradeButton: {
-      background: "linear-gradient(45deg, #f1c40f, #f39c12)",
-      border: "none",
-      padding: "8px 15px",
-      borderRadius: "5px",
-      transition: "all 0.3s ease",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-      width: "100%",
-    },
-    billCard: {
-      background: "rgba(255,255,255,0.1)",
-      margin: "15px",
-      borderRadius: "10px",
-      padding: "15px",
-    },
-    navContainer: {
-      margin: "0",
-      padding: "0 10px",
-    },
-    navItem: {
-      margin: "2px 0",
-      borderRadius: "8px",
-      transition: "all 0.3s ease",
-    },
-    navLink: {
-      display: "flex",
-      alignItems: "center",
-      padding: "10px 15px",
-      color: "#fff",
-      borderRadius: "8px",
-      transition: "all 0.3s ease",
-      "&:hover": {
-        background: "rgba(255,255,255,0.1)",
-      },
-    },
-    navIcon: {
-      width: "25px",
-      textAlign: "center",
-      marginRight: "10px",
-    },
-    navText: {
-      flex: 1,
-    },
-    subMenu: {
-      paddingLeft: "15px",
-    },
-  };
+  
 
   return (
     <>
@@ -309,103 +192,6 @@ const Sidebar = forwardRef((props, sidebarRef) => {
                 </Link>
               </li>
 
-                      {isOwner && (
-                      <li
-                        className={`nav-item ${dropdownStates.reports ? "menu-open" : ""
-                        }`}
-                      >
-                        <a
-                        href="#"
-                        className="nav-link"
-                        style={styles.navLink}
-                        onClick={() => handleDropdownClick("reports")}
-                        >
-                        <span style={styles.navIcon}>
-                          <img
-                          src={report}
-                          alt="report"
-                          style={{ height: "50px", marginRight: "100px" }}
-                          />
-                        </span>
-                        <span className="ml-3" style={styles.navText}>
-                          รายงาน
-                          <i className="right fas fa-angle-left ms-2"></i>
-                        </span>
-                        </a>
-                        <ul
-                        className="nav nav-treeview"
-                        style={{
-                          ...styles.subMenu,
-                          display: dropdownStates.reports ? "block" : "none",
-                        }}
-                        >
-                        <li className="nav-item">
-                          <a
-                          href="#"
-                          className="nav-link"
-                          style={styles.navLink}
-                          onClick={() => handleNavigation("/dashboard")}
-                          >
-                          <span style={styles.navIcon}>
-                            <i className="nav-icon fas fa-chart-line"></i>
-                          </span>
-                          <span style={styles.navText}>แดชบอร์ด</span>
-                          </a>
-                        </li>
-                        <li className="nav-item">
-                          <a
-                          href="#"
-                          className="nav-link"
-                          style={styles.navLink}
-                          onClick={() => handleNavigation("/dashboardreport")}
-                          >
-                          <span style={styles.navIcon}>
-                            <i className="fas fa-chart-bar"></i>
-                          </span>
-                          <span style={styles.navText}>รายงาน</span>
-                          </a>
-                        </li>
-                       
-                        <li className="nav-item" style={styles.navItem}>
-                          <Link
-                          to="/billSales"
-                          className="nav-link"
-                          style={styles.navLink}
-                          >
-                          <span style={styles.navIcon}>
-                            <i className="nav-icon fas fa-receipt"></i>
-                          </span>
-                          <span style={styles.navText}>รายงานบิลขาย</span>
-                          </Link>
-                        </li>
-
-                        <li className="nav-item" style={styles.navItem}>
-                          <Link
-                          to="/reportStock"
-                          className="nav-link"
-                          style={styles.navLink}
-                          >
-                          <span style={styles.navIcon}>
-                            <i className="nav-icon fas fa-boxes"></i>
-                          </span>
-                          <span style={styles.navText}>รายงาน Stock</span>
-                          </Link>
-                        </li>
-                        <li className="nav-item" style={styles.navItem}>
-                          <Link
-                          to="/PointHistory"
-                          className="nav-link"
-                          style={styles.navLink}
-                          >
-                          <span style={styles.navIcon}>
-                            <i className="nav-icon fas fa-star"></i>
-                          </span>
-                          <span style={styles.navText}>ประวัติการใช้แต้มสะสม</span>
-                          </Link>
-                        </li>
-                        </ul>
-                      </li>
-                      )}
 
                       {/* Products menu - visible to all */}
               <li
@@ -572,5 +358,107 @@ const Sidebar = forwardRef((props, sidebarRef) => {
     </>
   );
 });
+
+const styles = {
+    sidebar: {
+      boxShadow: "2px 0 10px rgba(0,0,0,0.2)",
+      transition: "all 0.3s ease",
+      height: "100vh",
+      background: "linear-gradient(180deg, #2c3e50 0%, #3498db 100%)",
+    },
+    brandLink: {
+      display: "flex",
+      alignItems: "center",
+      padding: "15px",
+      background: "rgba(255,255,255,0.1)",
+      borderBottom: "1px solid rgba(255,255,255,0.1)",
+      transition: "all 0.3s ease",
+    },
+    brandImage: {
+      width: "35px",
+      height: "35px",
+      marginRight: "10px",
+      borderRadius: "50%",
+      border: "2px solid rgba(255,255,255,0.2)",
+    },
+    brandText: {
+      color: "#fff",
+      fontSize: "1.2rem",
+      fontWeight: "500",
+    },
+    userPanel: {
+      position: "relative", // Add this
+      background: "rgba(255,255,255,0.1)",
+      padding: "20px",
+      margin: "15px",
+      borderRadius: "10px",
+      boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+    },
+    signOutButton: {
+      position: "absolute",
+      top: "10px",
+      right: "10px",
+      background: "rgba(255,255,255,0.1)",
+      border: "none",
+      borderRadius: "50%",
+      width: "35px",
+      height: "35px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#fff",
+      transition: "all 0.3s ease",
+      cursor: "pointer",
+      "&:hover": {
+        background: "rgba(255,255,255,0.2)",
+      },
+    },
+    upgradeButton: {
+      background: "linear-gradient(45deg, #f1c40f, #f39c12)",
+      border: "none",
+      padding: "8px 15px",
+      borderRadius: "5px",
+      transition: "all 0.3s ease",
+      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+      width: "100%",
+    },
+    billCard: {
+      background: "rgba(255,255,255,0.1)",
+      margin: "15px",
+      borderRadius: "10px",
+      padding: "15px",
+    },
+    navContainer: {
+      margin: "0",
+      padding: "0 10px",
+    },
+    navItem: {
+      margin: "2px 0",
+      borderRadius: "8px",
+      transition: "all 0.3s ease",
+    },
+    navLink: {
+      display: "flex",
+      alignItems: "center",
+      padding: "10px 15px",
+      color: "#fff",
+      borderRadius: "8px",
+      transition: "all 0.3s ease",
+      "&:hover": {
+        background: "rgba(255,255,255,0.1)",
+      },
+    },
+    navIcon: {
+      width: "25px",
+      textAlign: "center",
+      marginRight: "10px",
+    },
+    navText: {
+      flex: 1,
+    },
+    subMenu: {
+      paddingLeft: "15px",
+    },
+  };
 
 export default Sidebar;

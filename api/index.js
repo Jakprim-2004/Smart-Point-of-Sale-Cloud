@@ -17,92 +17,72 @@ app.use(cors({
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
 
-// Health check endpoint (ต้องมาก่อน controllers)
-app.get('/', (req, res) => {
+// Health check endpoint 
+app.get('/', async (req, res) => {
   try {
-    res.json({ 
-      message: 'Smart POS API is running on Vercel',
-      status: 'healthy',
-      timestamp: new Date().toLocaleString(),
-      env: {
-        nodeEnv: process.env.NODE_ENV,
-        hasDbUrl: !!process.env.DATABASE_URL,
-        hasCloudinary: !!process.env.CLOUDINARY_CLOUD_NAME
+    // Neon DB check
+    let neonStatus = '🌑 Not Connected';
+    if (process.env.DATABASE_URL) {
+      try {
+        const { neon } = require('@neondatabase/serverless');
+        const sql = neon(process.env.DATABASE_URL.trim().replace(/^['"]|['"]$/g, ''));
+        const result = await sql`SELECT 1`;
+        neonStatus = '🛰️ Connected';
+      } catch (err) {
+        neonStatus = '🚨 Error';
       }
+    }
+
+    // Cloudinary check
+    let cloudinaryStatus = '🌑 Not Connected';
+    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+      try {
+        const cloudinary = require('cloudinary').v2;
+        cloudinary.config({
+          cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+          api_key: process.env.CLOUDINARY_API_KEY,
+          api_secret: process.env.CLOUDINARY_API_SECRET
+        });
+        await cloudinary.api.ping();
+        cloudinaryStatus = '☁️ Connected';
+      } catch (err) {
+        cloudinaryStatus = '🚨 Error';
+      }
+    }
+
+    // Vercel check (assume always running on Vercel if process.env.VERCEL)
+    let vercelStatus = process.env.VERCEL ? '🪐 Running on Vercel' : '🌍 Local/Other';
+
+    res.json({
+      status: '🚀 Healthy',
+      message: '🪐 Smart POS API is online and orbiting Vercel!',
+      theme: 'Cosmic Space',
+      timestamp: new Date().toLocaleString(),
+      connections: [
+        { name: 'NeonDB', status: neonStatus },
+        { name: 'Cloudinary', status: cloudinaryStatus },
+        { name: 'Vercel', status: vercelStatus }
+      ],
+      galaxy: {
+        nodeEnv: process.env.NODE_ENV || 'unknown',
+        database: process.env.DATABASE_URL ? '🛰️ Set' : '🌑 Not Set',
+        cloudinary: process.env.CLOUDINARY_CLOUD_NAME ? '☁️ Set' : '🌑 Not Set',
+      },
+      stars: Math.floor(Math.random() * 10000),
+      nebula: 'Welcome to the future of POS, powered by cosmic tech.',
+      fun: '✨ May your sales be stellar! ✨'
     });
   } catch (error) {
     console.error('Health check error:', error);
     res.status(500).json({
+      status: '☄️ Error',
       message: 'Health check failed',
       error: error.message
     });
   }
 });
 
-// Simple database test endpoint
-app.get('/db-test', async (req, res) => {
-  try {
-    if (!process.env.DATABASE_URL) {
-      return res.status(500).json({
-        message: 'DATABASE_URL not set',
-        error: 'Environment variable missing'
-      });
-    }
 
- 
-
-    const conn = require('./connect');
-    await conn.authenticate();
-    
-    res.json({
-      message: 'Database connection successful',
-      status: 'connected',
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Database test error:', error);
-    res.status(500).json({
-      message: 'Database connection failed',
-      error: error.message,
-      details: error.original ? error.original.message : 'No additional details'
-    });
-  }
-});
-
-// Neon native test endpoint
-app.get('/neon-test', async (req, res) => {
-  try {
-    if (!process.env.DATABASE_URL) {
-      return res.status(500).json({
-        message: 'DATABASE_URL not set',
-        error: 'Environment variable missing'
-      });
-    }
-
-    // Clean the DATABASE_URL (remove any extra characters)
-    const cleanUrl = process.env.DATABASE_URL.trim().replace(/^['"]|['"]$/g, '');
-    console.log('Clean URL:', cleanUrl);
-
-    const { neon } = require('@neondatabase/serverless');
-    const sql = neon(cleanUrl);
-    
-    const result = await sql`SELECT version()`;
-    const { version } = result[0];
-    
-    res.json({
-      message: 'Neon connection successful',
-      version: version,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Neon test error:', error);
-    res.status(500).json({
-      message: 'Neon connection failed',
-      error: error.message,
-      databaseUrl: process.env.DATABASE_URL ? 'Set but possibly malformed' : 'Not set'
-    });
-  }
-});
 
 // Initialize database on first request
 let isDbInitialized = false;

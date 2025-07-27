@@ -8,14 +8,12 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Product from "./pages/Product";
-import User from "./pages/User";
 import Sale from "./pages/Sale";
 import BillSales from "./pages/BillSales";
 import SumSalePerDay from "./pages/SumSalePerDay";
 import Stock from "./pages/Stock";
 import ReportStock from "./pages/ReportStock";
 import Dashboard from "./pages/Dashboard";
-import Terms from "./pages/Terms";
 import DashboardReport from "./pages/DashboardReport";
 import Customer from "./pages/Customer";
 import Reward from "./pages/Reward";
@@ -42,10 +40,6 @@ const router = createBrowserRouter([
     element: <Product />,
   },
   {
-    path: "/user",
-    element: <User />,
-  },
-  {
     path: "/sale",
     element: <Sale />,
   },
@@ -68,10 +62,6 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <Dashboard />,
-  },
-  {
-    path: "/terms",
-    element: <Terms/>,
   },
   {
     path: "/dashboardreport",
