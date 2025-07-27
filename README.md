@@ -57,7 +57,7 @@ npm install
 npm install pg pg-hstore
 
 # สร้างไฟล์ .env
-cp .env.example .env
+cp .env
 ```
 
 ### 4. การตั้งค่า Environment Variables
@@ -84,7 +84,7 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
 # JWT Secret
-JWT_SECRET=your_jwt_secret_key
+secret=your_jwt_secret_key
 
 # CORS Settings
 CORS_ORIGIN=http://localhost:3000,https://your-frontend-domain.vercel.app
@@ -124,7 +124,7 @@ cd ../web/app
 npm install
 
 # สร้างไฟล์ config
-cp src/config.example.js src/config.js
+cp  src/config.js
 ```
 
 แก้ไขไฟล์ `src/config.js`:
@@ -183,29 +183,7 @@ npm start
 - **members**: สมาชิก
 - **users**: ผู้ใช้งานระบบ
 
-### การ Migration Database:
-```sql
--- ตัวอย่าง SQL สำหรับ PostgreSQL
-CREATE TABLE products (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    cost DECIMAL(10,2) NOT NULL,
-    barcode VARCHAR(13) UNIQUE NOT NULL,
-    category VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
-CREATE TABLE product_images (
-    id SERIAL PRIMARY KEY,
-    product_id INTEGER REFERENCES products(id),
-    image_name VARCHAR(255),
-    image_url TEXT,  -- Cloudinary URL
-    is_main BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
 
 ## 📱 การใช้งาน
 
@@ -294,18 +272,6 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 });
 ```
 
-### เปลี่ยนธีมหรือสีของระบบ
-```css
-/* web/app/src/index.css */
-:root {
-  --primary-color: #007bff;
-  --secondary-color: #6c757d;
-  --success-color: #28a745;
-  --danger-color: #dc3545;
-  --warning-color: #ffc107;
-  --info-color: #17a2b8;
-}
-```
 
 ## 🚀 การ Deploy
 
@@ -373,42 +339,6 @@ DATABASE_URL=postgresql://user:pass@hostname/dbname?sslmode=require&pgbouncer=tr
    npm run migrate
    ```
 
-### Debug Commands
-```bash
-# ตรวจสอบการเชื่อมต่อฐานข้อมูล
-npm run db:test
-
-# ดู Database schema
-npm run db:schema
-
-# เปิด debug mode สำหรับ backend
-DEBUG=* npm run dev
-
-# ตรวจสอบ Cloudinary connection
-npm run cloudinary:test
-```
-
-### Database Queries สำหรับ Debug
-```sql
--- ตรวจสอบข้อมูลสินค้าและรูปภาพ
-SELECT 
-  p.id, 
-  p.name, 
-  p.barcode,
-  pi.image_url,
-  pi.is_main
-FROM products p
-LEFT JOIN product_images pi ON p.id = pi.product_id
-ORDER BY p.id;
-
--- ตรวจสอบรูปภาพที่ไม่มี URL
-SELECT * FROM product_images WHERE image_url IS NULL OR image_url = '';
-
--- อัปเดตรูปภาพเก่าให้มี URL (Migration)
-UPDATE product_images 
-SET image_url = 'https://res.cloudinary.com/your-cloud/image/upload/v1234567890/smart-pos/' || image_name || '.jpg'
-WHERE image_url IS NULL AND image_name IS NOT NULL;
-```
 
 ## 🔒 Security Features
 
@@ -436,17 +366,7 @@ WHERE image_url IS NULL AND image_name IS NOT NULL;
 - **Lazy Loading**: โหลดข้อมูลเมื่อจำเป็น
 - **Caching**: ใช้ browser cache อย่างเหมาะสม
 
-## 🤝 การมีส่วนร่วม
 
-1. Fork repository
-2. สร้าง feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit การเปลี่ยนแปลง (`git commit -m 'Add amazing feature'`)
-4. Push ไปยัง branch (`git push origin feature/amazing-feature`)
-5. เปิด Pull Request
-
-## 📄 License
-
-โครงการนี้อยู่ภายใต้ MIT License - ดูไฟล์ [LICENSE](LICENSE) สำหรับรายละเอียด
 
 ## 🛠️ Technology Stack
 
@@ -474,23 +394,6 @@ WHERE image_url IS NULL AND image_name IS NOT NULL;
 ## 👥 ผู้พัฒนา
 
 - **Kaimuk** - *Initial work* - [YourGitHub](https://github.com/jakprim-2004)
-
-## 🙏 กิตติกรรมประกาศ
-
-- [React.js](https://reactjs.org/)
-- [Node.js](https://nodejs.org/)
-- [Express.js](https://expressjs.com/)
-- [PostgreSQL](https://postgresql.org/)
-- [Neon Database](https://neon.tech/)
-- [Sequelize](https://sequelize.org/)
-- [Cloudinary](https://cloudinary.com/)
-- [Bootstrap](https://getbootstrap.com/)
-- [Vercel](https://vercel.com/)
-
----
-
-
-### 📞 Quick Start Guide
 
 1. **สร้างบัญชี Neon**: [neon.tech](https://neon.tech)
 2. **สร้างบัญชี Cloudinary**: [cloudinary.com](https://cloudinary.com)
